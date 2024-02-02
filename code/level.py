@@ -10,6 +10,7 @@ from soil import SoilLayer
 from sky import Rain, Sky
 from random import randint
 from menu import Menu
+from agent import Agent
 
 class Level:
 	def __init__(self):
@@ -99,6 +100,15 @@ class Level:
 
 			if obj.name == 'Trader':
 				Interaction((obj.x,obj.y), (obj.width,obj.height), self.interaction_sprites, obj.name)
+			if obj.name == 'Agent_Start':
+				self.agent = Agent(
+					pos = (obj.x,obj.y), 
+					group = self.all_sprites, 
+					collision_sprites = self.collision_sprites,
+					tree_sprites = self.tree_sprites,
+					interaction = self.interaction_sprites,
+					soil_layer = self.soil_layer
+				)
 
 
 		Generic(

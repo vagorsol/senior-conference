@@ -1,71 +1,85 @@
 import pygame
+from entity import *
 from settings import *
 from support import *
 from timer import Timer
 
-class Player(pygame.sprite.Sprite):
+class Player(Entity):
 	def __init__(self, pos, group, collision_sprites, tree_sprites, interaction, soil_layer, toggle_shop):
-		super().__init__(group)
+		super().__init__(pos, group, collision_sprites, tree_sprites, interaction, soil_layer, 'character')
 
-		self.import_assets()
-		self.status = 'down_idle'
-		self.frame_index = 0
+		# self.import_assets()
+		# self.status = 'down_idle'
+		# self.frame_index = 0
 
-		# general setup
-		self.image = self.animations[self.status][self.frame_index]
-		self.rect = self.image.get_rect(center = pos)
-		self.z = LAYERS['main']
+		# # general setup
+		# self.image = self.animations[self.status][self.frame_index]
+		# self.rect = self.image.get_rect(center = pos)
+		# self.z = LAYERS['main']
 
-		# movement attributes
-		self.direction = pygame.math.Vector2()
-		self.pos = pygame.math.Vector2(self.rect.center)
-		self.speed = 200
+		# # movement attributes
+		# self.direction = pygame.math.Vector2()
+		# self.pos = pygame.math.Vector2(self.rect.center)
+		# self.speed = 200
 
-		# collision
-		self.hitbox = self.rect.copy().inflate((-126,-70))
-		self.collision_sprites = collision_sprites
+		# # collision
+		# self.hitbox = self.rect.copy().inflate((-126,-70))
+		# self.collision_sprites = collision_sprites
 
-		# timers 
-		self.timers = {
-			'tool use': Timer(350,self.use_tool),
-			'tool switch': Timer(200),
-			'seed use': Timer(350,self.use_seed),
-			'seed switch': Timer(200),
-		}
+		# # timers 
+		# self.timers = {
+		# 	'tool use': Timer(350,self.use_tool),
+		# 	'tool switch': Timer(200),
+		# 	'seed use': Timer(350,self.use_seed),
+		# 	'seed switch': Timer(200),
+		# }
 
-		# tools 
-		self.tools = ['hoe','axe','water']
-		self.tool_index = 0
-		self.selected_tool = self.tools[self.tool_index]
+		# # tools 
+		# self.tools = ['hoe','axe','water']
+		# self.tool_index = 0
+		# self.selected_tool = self.tools[self.tool_index]
 
-		# seeds 
-		self.seeds = ['corn', 'tomato']
-		self.seed_index = 0
-		self.selected_seed = self.seeds[self.seed_index]
+		# # seeds 
+		# self.seeds = ['corn', 'tomato']
+		# self.seed_index = 0
+		# self.selected_seed = self.seeds[self.seed_index]
 
-		# inventory
-		self.item_inventory = {
-			'wood':   20,
-			'apple':  20,
-			'corn':   20,
-			'tomato': 20
-		}
-		self.seed_inventory = {
-		'corn': 5,
-		'tomato': 5
-		}
-		self.money = 200
+		# # inventory
+		# self.item_inventory = {
+		# 	'wood':   20,
+		# 	'apple':  20,
+		# 	'corn':   20,
+		# 	'tomato': 20
+		# }
+		# self.seed_inventory = {
+		# 'corn': 5,
+		# 'tomato': 5
+		# }
+		# self.money = 200
 
-		# interaction
-		self.tree_sprites = tree_sprites
-		self.interaction = interaction
-		self.sleep = False
-		self.soil_layer = soil_layer
-		self.toggle_shop = toggle_shop
+		# # inventory
+		# self.item_inventory = {
+		# 	'wood':   20,
+		# 	'apple':  20,
+		# 	'corn':   20,
+		# 	'tomato': 20
+		# }
+		# self.seed_inventory = {
+		# 'corn': 5,
+		# 'tomato': 5
+		# }
+		# self.money = 200
 
-		# sound
-		self.watering = pygame.mixer.Sound('../audio/water.mp3')
-		self.watering.set_volume(0.2)
+		# # interaction
+		# self.tree_sprites = tree_sprites
+		# self.interaction = interaction
+		# self.sleep = False
+		# self.soil_layer = soil_layer
+		# self.toggle_shop = toggle_shop
+
+		# # sound
+		# self.watering = pygame.mixer.Sound('../audio/water.mp3')
+		# self.watering.set_volume(0.2)
 
 	def use_tool(self):
 		if self.selected_tool == 'hoe':
@@ -112,26 +126,26 @@ class Player(pygame.sprite.Sprite):
 
 		if not self.timers['tool use'].active and not self.sleep:
 			# directions 
-			if keys[pygame.K_UP]:
+			if keys[pygame.K_UP] or keys[pygame.K_w]:
 				self.direction.y = -1
 				self.status = 'up'
-			elif keys[pygame.K_DOWN]:
+			elif keys[pygame.K_DOWN] or keys[pygame.K_s]:
 				self.direction.y = 1
 				self.status = 'down'
 			else:
 				self.direction.y = 0
 
-			if keys[pygame.K_RIGHT]:
+			if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
 				self.direction.x = 1
 				self.status = 'right'
-			elif keys[pygame.K_LEFT]:
+			elif keys[pygame.K_LEFT] or keys[pygame.K_a]:
 				self.direction.x = -1
 				self.status = 'left'
 			else:
 				self.direction.x = 0
 
 			# tool use
-			if keys[pygame.K_SPACE]:
+			if keys[pygame.K_x]:
 				self.timers['tool use'].activate()
 				self.direction = pygame.math.Vector2()
 				self.frame_index = 0
@@ -144,7 +158,7 @@ class Player(pygame.sprite.Sprite):
 				self.selected_tool = self.tools[self.tool_index]
 
 			# seed use
-			if keys[pygame.K_LCTRL]:
+			if keys[pygame.K_c]:
 				self.timers['seed use'].activate()
 				self.direction = pygame.math.Vector2()
 				self.frame_index = 0
