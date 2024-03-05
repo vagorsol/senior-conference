@@ -3,8 +3,6 @@ from settings import *
 from support import *
 from timer import Timer
 
-# i am about to attempt inheritance. in python, a language i only technically can program in
-# god help me. 
 class Entity(pygame.sprite.Sprite):
 	def __init__(self, pos, group, collision_sprites, tree_sprites, interaction, soil_layer, character_name):
 		super().__init__(group)
@@ -21,7 +19,7 @@ class Entity(pygame.sprite.Sprite):
 
 		# movement attributes
 		self.direction = pygame.math.Vector2()
-		self.pos = pygame.math.Vector2(self.rect.center)
+		self.pos = pygame.math.Vector2(self.rect.center) # position
 		self.speed = 200
 
 		# collision
@@ -40,12 +38,13 @@ class Entity(pygame.sprite.Sprite):
 		self.tools = ['hoe','axe','water']
 		self.tool_index = 0
 		self.selected_tool = self.tools[self.tool_index]
+		self.target_pos = 0
 
 		# seeds 
 		self.seeds = ['corn', 'tomato']
 		self.seed_index = 0
 		self.selected_seed = self.seeds[self.seed_index]
-
+		
 		# inventory
 		# self.item_inventory = {
 		# 	'wood':   20,
@@ -62,9 +61,7 @@ class Entity(pygame.sprite.Sprite):
 		# interaction
 		self.tree_sprites = tree_sprites
 		self.interaction = interaction
-		self.sleep = False
 		self.soil_layer = soil_layer
-		# self.toggle_shop = toggle_shop
 
 		# sound
 		self.watering = pygame.mixer.Sound('../audio/water.mp3')
@@ -125,6 +122,7 @@ class Entity(pygame.sprite.Sprite):
 	def collision(self, direction):
 		for sprite in self.collision_sprites.sprites():
 			if hasattr(sprite, 'hitbox'):
+				# print(sprite.image.get_rect().center)
 				if sprite.hitbox.colliderect(self.hitbox):
 					if direction == 'horizontal':
 						if self.direction.x > 0: # moving right
@@ -142,7 +140,7 @@ class Entity(pygame.sprite.Sprite):
 						self.rect.centery = self.hitbox.centery
 						self.pos.y = self.hitbox.centery
 
-	def move(self,dt):
+	def move(self, dt):
 		# normalizing a vector 
 		if self.direction.magnitude() > 0:
 			self.direction = self.direction.normalize()
@@ -158,11 +156,3 @@ class Entity(pygame.sprite.Sprite):
 		self.hitbox.centery = round(self.pos.y)
 		self.rect.centery = self.hitbox.centery
 		self.collision('vertical')
-
-	# def update(self, dt):
-	# 	self.get_status()
-	# 	self.update_timers()
-	# 	self.get_target_pos()
-
-	# 	self.move(dt)
-	# 	self.animate(dt)
