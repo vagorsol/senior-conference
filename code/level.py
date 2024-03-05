@@ -76,8 +76,6 @@ class Level:
 				groups = [self.all_sprites, self.collision_sprites, self.tree_sprites, self.nav_collision], 
 				name = obj.name,
 				player_add = self.player_add)
-			
-			# print(obj.x // TILE_SIZE, obj.y // TILE_SIZE)
 
 		# wildflowers 
 		for obj in tmx_data.get_layer_by_name('Decoration'):
