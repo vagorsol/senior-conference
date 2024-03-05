@@ -1,13 +1,11 @@
 import player
 import py_trees
-import math
 from entity import *
 from settings import *
 from support import *
 from pathfinding.core.grid import Grid
 from pathfinding.finder.a_star import AStarFinder
 from pathfinding.core.diagonal_movement import DiagonalMovement
-
 
 class Agent(Entity):
     def __init__(self, pos, player, group, collision_sprites, tree_sprites, interaction, soil_layer, grid):
@@ -16,7 +14,7 @@ class Agent(Entity):
         self.player = player
         self.direction.x = 0
         self.grid = grid
-        self.finder = AStarFinder(diagonal_movement = DiagonalMovement.always)
+        self.finder = AStarFinder(diagonal_movement = DiagonalMovement.always) 
 
     def move(self, target, dt):
         start = self.grid.node(int(self.pos.x // TILE_SIZE), int(self.pos.y // TILE_SIZE))
@@ -24,16 +22,16 @@ class Agent(Entity):
         path,_ = self.finder.find_path(start, end, self.grid)
         self.grid.cleanup()
 
-        # may be off by decimal points but is fine (probably)
-        if(len(path) > 1):
+        # because int, cannot do in between grids
+        # most likely wil need to revisit this later
+        path.pop(0)
+        if(path):
             self.direction = (
-                pygame.math.Vector2(path[1].x, path[1].y) - pygame.math.Vector2(start.x, start.y))
-            if (self.direction != 0):
-                self.direction = self.direction.normalize()
+                pygame.math.Vector2(path[0].x, path[0].y) - pygame.math.Vector2(start.x, start.y)).normalize()
         else:
             self.direction = pygame.math.Vector2(0, 0)
 
-        # setting the walking animation (need to tune this)
+        # setting the walking animation
         if self.direction.y >= 1:
             self.status = 'down'
         elif self.direction.y <= -1:
@@ -48,8 +46,8 @@ class Agent(Entity):
         self.get_status()
         self.update_timers()
         self.get_target_pos()
-
-        target = pygame.math.Vector2(26, 31)
+        #15, 7
+        target = pygame.math.Vector2(16, 12)
         self.move(target, dt)
         self.animate(dt)
     

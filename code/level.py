@@ -197,14 +197,16 @@ class Level:
 		self.matrix = [[1 for col in range(h_tiles)] for row in range(v_tiles)]
 		for x, y, _ in load_pygame('../data/map.tmx').get_layer_by_name('Collision').tiles():
 			self.matrix[y][x] = 0
-			# print(x, y)
-		# print(self.matrix[31][26])
+		# house edge cases
+		for i in range(20, 27):
+			self.matrix[i][19] = 0
+			self.matrix[i][20] = 0
+			self.matrix[i][27] = 0
+			self.matrix[i][28] = 0
 		for sprite in self.nav_collision.sprites():
 			if hasattr(sprite, 'hitbox'):
-				self.matrix[sprite.rect.top // TILE_SIZE][sprite.rect.left // TILE_SIZE] = 1
-				# print(sprite.rect.left // TILE_SIZE, sprite.rect.top // TILE_SIZE)
-		# print(self.matrix)
-		# print(self.matrix[27][26])
+				self.matrix[sprite.rect.top // TILE_SIZE][sprite.rect.left // TILE_SIZE] = 0
+				
 		self.grid = Grid(range(h_tiles), range(v_tiles), self.matrix)
 
 
