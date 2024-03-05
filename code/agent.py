@@ -5,6 +5,8 @@ from entity import *
 from settings import *
 from support import *
 from pathfinding.core.grid import Grid
+from pathfinding.finder.a_star import AStarFinder
+from pathfinding.core.diagonal_movement import DiagonalMovement
 
 
 class Agent(Entity):
@@ -12,22 +14,16 @@ class Agent(Entity):
         super().__init__(pos, group, collision_sprites, tree_sprites, interaction, soil_layer, "agent")
         
         self.player = player
-        self.direction.x = 1
+        self.direction.x = 0
+        self.grid = grid
+        self.finder = AStarFinder(diagonal_movement = DiagonalMovement.always)
 
-    def move(self, target, dt):
-        # get player size
-        # make target position behind player
+    def move(self, dt):
+        start = self.grid.node(int(self.pos.x // TILE_SIZE), int(self.pos.y // TILE_SIZE))
+        end = self.grid.node(26, 31) # pygame.math.Vector2     
+        path,_ = self.finder.find_path(start, end, self.grid)
+        self.grid.cleanup()
         
-        # get agent to do an "errand" (click on map and it goes there?)
-        print(self.pos.x // TILE_SIZE, self.pos.y // TILE_SIZE)
-        self.direction.x = (self.player.pos.x - self.pos.x)
-        self.direction.y = (self.player.pos.y - self.pos.y)
-        b = self.direction.length() - 50
-        self.direction = self.direction.normalize() * b
-        self.direction.x = math.floor(self.direction.x)
-        self.direction.y = math.floor(self.direction.y)
-        # print(self.direction)
-
         # setting the walking animation (need to tune this)
         if self.direction.y >= 1:
             self.status = 'down'
@@ -43,7 +39,7 @@ class Agent(Entity):
         self.get_status()
         self.update_timers()
         self.get_target_pos()
-        # print(self.pos.x // TILE_SIZE, self.pos.y // TILE_SIZE)
+
         self.move(dt)
         self.animate(dt)
     

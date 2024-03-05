@@ -1,4 +1,5 @@
 import pygame 
+from pathfinding.core.grid import Grid
 from settings import *
 from player import Player
 from overlay import Overlay
@@ -21,6 +22,7 @@ class Level:
 		# sprite groups
 		self.all_sprites = CameraGroup()
 		self.collision_sprites = pygame.sprite.Group()
+		self.nav_collision = pygame.sprite.Group()
 		self.tree_sprites = pygame.sprite.Group()
 		self.interaction_sprites = pygame.sprite.Group()
 
@@ -40,14 +42,14 @@ class Level:
 		self.shop_active = False
 
 		# music
-		self.success = pygame.mixer.Sound('../audio/success.wav')
-		self.success.set_volume(0.3)
-		self.music = pygame.mixer.Sound('../audio/music.mp3')
-		self.music.play(loops = -1)
+		# self.success = pygame.mixer.Sound('../audio/success.wav')
+		# self.success.set_volume(0.3)
+		# self.music = pygame.mixer.Sound('../audio/music.mp3')
+		# self.music.play(loops = -1)
 
 	def setup(self):
 		tmx_data = load_pygame('../data/map.tmx')
-
+		
 		# house 
 		for layer in ['HouseFloor', 'HouseFurnitureBottom']:
 			for x, y, surf in tmx_data.get_layer_by_name(layer).tiles():
@@ -59,7 +61,7 @@ class Level:
 
 		# Fence
 		for x, y, surf in tmx_data.get_layer_by_name('Fence').tiles():
-			Generic((x * TILE_SIZE,y * TILE_SIZE), surf, [self.all_sprites, self.collision_sprites])
+			Generic((x * TILE_SIZE,y * TILE_SIZE), surf, [self.all_sprites, self.collision_sprites, self.nav_collision])
 
 		# water 
 		water_frames = import_folder('../graphics/water')
@@ -71,18 +73,22 @@ class Level:
 			Tree(
 				pos = (obj.x, obj.y), 
 				surf = obj.image, 
-				groups = [self.all_sprites, self.collision_sprites, self.tree_sprites], 
+				groups = [self.all_sprites, self.collision_sprites, self.tree_sprites, self.nav_collision], 
 				name = obj.name,
 				player_add = self.player_add)
+			
+			# print(obj.x // TILE_SIZE, obj.y // TILE_SIZE)
 
 		# wildflowers 
 		for obj in tmx_data.get_layer_by_name('Decoration'):
-			WildFlower((obj.x, obj.y), obj.image, [self.all_sprites, self.collision_sprites])
+			WildFlower((obj.x, obj.y), obj.image, [self.all_sprites, self.collision_sprites, self.nav_collision])
 
 		# collion tiles
 		for x, y, surf in tmx_data.get_layer_by_name('Collision').tiles():
-			Generic((x * TILE_SIZE, y * TILE_SIZE), pygame.Surface((TILE_SIZE, TILE_SIZE)), self.collision_sprites)
+			Generic((x * TILE_SIZE, y * TILE_SIZE), pygame.Surface((TILE_SIZE, TILE_SIZE)), self.collision_sprites, self.nav_collision)
 
+		self.create_pathing_grid()
+		
 		# Player 
 		for obj in tmx_data.get_layer_by_name('Player'):
 			if obj.name == 'Start':
@@ -103,11 +109,13 @@ class Level:
 			if obj.name == 'Agent_Start':
 				self.agent = Agent(
 					pos = (obj.x,obj.y), 
+					player = self.player,
 					group = self.all_sprites, 
 					collision_sprites = self.collision_sprites,
 					tree_sprites = self.tree_sprites,
 					interaction = self.interaction_sprites,
-					soil_layer = self.soil_layer
+					soil_layer = self.soil_layer,
+					grid = self.grid
 				)
 
 
@@ -177,6 +185,30 @@ class Level:
 		# transition overlay
 		if self.player.sleep:
 			self.transition.play()
+	
+	def create_pathing_grid(self):
+		ground = pygame.image.load('../graphics/world/ground.png')
+		h_tiles, v_tiles = ground.get_width() // TILE_SIZE, ground.get_height() // TILE_SIZE
+
+		# how to get all collidble sprites but also not the player or self. uh. hm. 
+		# for sprite in self.collision_sprites.sprites():
+		# 	if hasattr(sprite, 'hitbox'):
+		# 		sprite_rect = sprite.image.get_rect()
+		# 		print(pygame.math.Vector2(sprite_rect.center))
+				
+		self.matrix = [[1 for col in range(h_tiles)] for row in range(v_tiles)]
+		for x, y, _ in load_pygame('../data/map.tmx').get_layer_by_name('Collision').tiles():
+			self.matrix[y][x] = 0
+			# print(x, y)
+		# print(self.matrix[31][26])
+		for sprite in self.nav_collision.sprites():
+			if hasattr(sprite, 'hitbox'):
+				self.matrix[sprite.rect.top // TILE_SIZE][sprite.rect.left // TILE_SIZE] = 1
+				# print(sprite.rect.left // TILE_SIZE, sprite.rect.top // TILE_SIZE)
+		# print(self.matrix)
+		# print(self.matrix[27][26])
+		self.grid = Grid(range(h_tiles), range(v_tiles), self.matrix)
+
 
 class CameraGroup(pygame.sprite.Group):
 	def __init__(self):
