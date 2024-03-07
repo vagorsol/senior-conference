@@ -122,7 +122,6 @@ class Entity(pygame.sprite.Sprite):
 	def collision(self, direction):
 		for sprite in self.collision_sprites.sprites():
 			if hasattr(sprite, 'hitbox'):
-				# print(sprite.image.get_rect().center)
 				if sprite.hitbox.colliderect(self.hitbox):
 					if direction == 'horizontal':
 						if self.direction.x > 0: # moving right
