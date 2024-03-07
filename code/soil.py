@@ -53,6 +53,7 @@ class Plant(pygame.sprite.Sprite):
 				self.harvestable = True
 
 			self.image = self.frames[int(self.age)]
+			print(self.soil.rect.centerx // TILE_SIZE, self.soil.rect.centery // TILE_SIZE)
 			self.rect = self.image.get_rect(midbottom = self.soil.rect.midbottom + pygame.math.Vector2(0,self.y_offset))
 
 class SoilLayer:
@@ -64,6 +65,10 @@ class SoilLayer:
 		self.soil_sprites = pygame.sprite.Group()
 		self.water_sprites = pygame.sprite.Group()
 		self.plant_sprites = pygame.sprite.Group()
+
+		# lists
+		self.empty_soil_tiles = []
+		self.unwatered_tiles = []
 
 		# graphics
 		self.soil_surfs = import_folder_dict('../graphics/soil/')
@@ -108,8 +113,17 @@ class SoilLayer:
 				if 'F' in self.grid[y][x]:
 					self.grid[y][x].append('X')
 					self.create_soil_tiles()
+					tile = pygame.math.Vector2(x, y)
+
+					# add if list doesn't contains
+					if tile not in self.empty_soil_tiles:
+						self.empty_soil_tiles.append(tile)
+
 					if self.raining:
 						self.water_all()
+					else:
+						if tile not in self.unwatered_tiles:
+							self.unwatered_tiles.append(tile)
 
 	def water(self, target_pos):
 		for soil_sprite in self.soil_sprites.sprites():
@@ -118,6 +132,9 @@ class SoilLayer:
 				x = soil_sprite.rect.x // TILE_SIZE
 				y = soil_sprite.rect.y // TILE_SIZE
 				self.grid[y][x].append('W')
+				
+				if pygame.math.Vector2(x, y) in self.unwatered_tiles:
+					self.unwatered_tiles.remove(pygame.math.Vector2(x, y))
 
 				pos = soil_sprite.rect.topleft
 				surf = choice(self.water_surfs)
@@ -161,6 +178,7 @@ class SoilLayer:
 
 				if 'P' not in self.grid[y][x]:
 					self.grid[y][x].append('P')
+					self.empty_soil_tiles.remove(pygame.math.Vector2(x, y))
 					Plant(seed, [self.all_sprites, self.plant_sprites, self.collision_sprites], soil_sprite, self.check_watered)
 
 	def update_plants(self):
