@@ -53,7 +53,6 @@ class Plant(pygame.sprite.Sprite):
 				self.harvestable = True
 
 			self.image = self.frames[int(self.age)]
-			print(self.soil.rect.centerx // TILE_SIZE, self.soil.rect.centery // TILE_SIZE)
 			self.rect = self.image.get_rect(midbottom = self.soil.rect.midbottom + pygame.math.Vector2(0,self.y_offset))
 
 class SoilLayer:
