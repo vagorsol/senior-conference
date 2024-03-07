@@ -1,5 +1,6 @@
 import player
 import py_trees
+import sys
 from entity import *
 from settings import *
 from support import *
@@ -28,6 +29,7 @@ class Agent(Entity):
         # potential pathing issues: because the grid-based-ness, can get caught
         # in between objects not accounted for in the grid. also can possibly not reach some areas
         # so have to run a "can i get there" check first
+        # TODO: grid pathing funkiness check
         if (path_status):
             path.pop(0)
             if(path):
@@ -48,6 +50,27 @@ class Agent(Entity):
         elif self.direction.x <= -1:
             self.status = 'left'
         super().move(dt) 
+
+    def nearest_coor(self, lst):
+        # TODO: point in a list from current position that has the shortest path
+        # given a list of points, return the point that a) can be reached from tphe current location and 
+        # b) has the shortest path. then return the point i guess??
+        # (probably should return the path too so i don't have to recalculate it... time efficiency woo!!)
+        start = self.grid.node(int(self.pos.x // TILE_SIZE), int(self.pos.y // TILE_SIZE))
+        return_point = start
+        min_len = sys.maxsize # set to some large number. tbd
+        for coor in lst: 
+            # print(coor)
+            end = self.grid.node(int(coor.x), int(coor.y)) 
+            path, path_status = self.finder.find_path(start, end, self.grid)
+            self.grid.cleanup()
+            if (path_status and len(path) < min_len):
+                return_point = coor
+        return return_point
+
+    def choose_target(self):
+        point = self.nearest_coor(self.tree_layer)
+        return point
 
     def update(self, dt):
         self.get_status()
