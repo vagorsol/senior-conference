@@ -27,6 +27,7 @@ class Level:
 		self.interaction_sprites = pygame.sprite.Group()
 
 		self.soil_layer = SoilLayer(self.all_sprites, self.collision_sprites)
+		self.tree_layer = []
 		self.setup()
 		self.overlay = Overlay(self.player)
 		self.transition = Transition(self.reset, self.player)
@@ -40,7 +41,7 @@ class Level:
 		# shop
 		self.menu = Menu(self.player, self.toggle_shop)
 		self.shop_active = False
-
+		
 		# music
 		# self.success = pygame.mixer.Sound('../audio/success.wav')
 		# self.success.set_volume(0.3)
@@ -75,7 +76,10 @@ class Level:
 				surf = obj.image, 
 				groups = [self.all_sprites, self.collision_sprites, self.tree_sprites, self.nav_collision], 
 				name = obj.name,
-				player_add = self.player_add)
+				player_add = self.player_add,
+				tree_layer = self.tree_layer)
+			self.tree_layer.append(pygame.math.Vector2(obj.x, obj.y))
+			# pass tree layer to tree too
 
 		# wildflowers 
 		for obj in tmx_data.get_layer_by_name('Decoration'):
@@ -113,6 +117,7 @@ class Level:
 					tree_sprites = self.tree_sprites,
 					interaction = self.interaction_sprites,
 					soil_layer = self.soil_layer,
+					tree_layer = self.tree_layer,
 					grid = self.grid
 				)
 
@@ -126,7 +131,7 @@ class Level:
 	def player_add(self,item):
 
 		self.player.item_inventory[item] += 1
-		self.success.play()
+		# self.success.play()
 
 	def toggle_shop(self):
 
@@ -144,10 +149,18 @@ class Level:
 			self.soil_layer.water_all()
 
 		# apples on the trees
+		# sometimes it decides not to recognize tree.apple_sprites
 		for tree in self.tree_sprites.sprites():
+			# regrows trees - random amount
+			if (not tree.alive and tree.respawn == 0):
+				tree.reset()
+			elif (not tree.alive):
+				tree.respawn -= 1
+			# regenerates tree
 			for apple in tree.apple_sprites.sprites():
 				apple.kill()
 			tree.create_fruit()
+		
 
 		# sky
 		self.sky.start_color = [255,255,255]
@@ -157,6 +170,9 @@ class Level:
 			for plant in self.soil_layer.plant_sprites.sprites():
 				if plant.harvestable and plant.rect.colliderect(self.player.hitbox):
 					self.player_add(plant.plant_type)
+
+					# add tile back to soil layer
+					self.soil_layer.empty_soil_tiles.append(pygame.math.Vector2(plant.rect.centerx // TILE_SIZE, plant.rect.centery // TILE_SIZE))
 					plant.kill()
 					Particle(plant.rect.topleft, plant.image, self.all_sprites, z = LAYERS['main'])
 					self.soil_layer.grid[plant.rect.centery // TILE_SIZE][plant.rect.centerx // TILE_SIZE].remove('P')
@@ -187,7 +203,7 @@ class Level:
 	def create_pathing_grid(self):
 		ground = pygame.image.load('../graphics/world/ground.png')
 		h_tiles, v_tiles = ground.get_width() // TILE_SIZE, ground.get_height() // TILE_SIZE
-
+				
 		# how to get all collidble sprites but also not the player or self. uh. hm. 
 		# for sprite in self.collision_sprites.sprites():
 		# 	if hasattr(sprite, 'hitbox'):

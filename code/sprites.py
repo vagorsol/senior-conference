@@ -63,7 +63,7 @@ class Particle(Generic):
 			self.kill()
 
 class Tree(Generic):
-	def __init__(self, pos, surf, groups, name, player_add):
+	def __init__(self, pos, surf, groups, name, player_add, tree_layer):
 		super().__init__(pos, surf, groups)
 
 		# tree attributes
@@ -79,6 +79,12 @@ class Tree(Generic):
 		self.create_fruit()
 
 		self.player_add = player_add
+		self.tree_layer = tree_layer
+		self.pos_coor = pygame.math.Vector2(pos[0], pos[1])
+		
+		self.tree_surf = surf
+		self.pos = pos
+		self.respawn = 0
 
 		# sounds
 		self.axe_sound = pygame.mixer.Sound('../audio/axe.mp3')
@@ -109,7 +115,9 @@ class Tree(Generic):
 			self.rect = self.image.get_rect(midbottom = self.rect.midbottom)
 			self.hitbox = self.rect.copy().inflate(-10,-self.rect.height * 0.6)
 			self.alive = False
+			self.tree_layer.remove(self.pos_coor)
 			self.player_add('wood')
+			self.respawn = randint(0,1) # sets a "respawn" timer of 0-1 days
 
 	def update(self,dt):
 		if self.alive:
@@ -125,3 +133,13 @@ class Tree(Generic):
 					surf = self.apple_surf, 
 					groups = [self.apple_sprites,self.groups()[0]],
 					z = LAYERS['fruit'])
+	
+	def reset(self):
+		if (not self.alive):
+			self.health = 5
+			self.tree_layer.append(self.pos_coor)
+			self.alive = True
+
+			self.image = self.tree_surf
+			self.rect = self.image.get_rect(topleft = self.pos)
+			self.hitbox = self.rect.copy().inflate(-self.rect.width * 0.2, -self.rect.height * 0.75)
