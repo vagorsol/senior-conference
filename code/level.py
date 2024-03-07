@@ -78,7 +78,7 @@ class Level:
 				name = obj.name,
 				player_add = self.player_add,
 				tree_layer = self.tree_layer)
-			self.tree_layer.append(pygame.math.Vector2(obj.x, obj.y))
+			self.tree_layer.append(pygame.math.Vector2(obj.x // TILE_SIZE, obj.y // TILE_SIZE))
 			# pass tree layer to tree too
 
 		# wildflowers 
