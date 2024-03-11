@@ -80,7 +80,7 @@ class Tree(Generic):
 
 		self.player_add = player_add
 		self.tree_layer = tree_layer
-		self.pos_coor = pygame.math.Vector2(pos[0], pos[1])
+		self.pos_coor = pygame.math.Vector2(pos[0] // TILE_SIZE, pos[1] // TILE_SIZE)
 		
 		self.tree_surf = surf
 		self.pos = pos
