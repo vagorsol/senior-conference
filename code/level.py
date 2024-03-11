@@ -232,6 +232,18 @@ class Level:
 				
 		self.grid = Grid(range(h_tiles), range(v_tiles), self.matrix)
 
+		# for col in range(h_tiles):
+		# 	for row in range(v_tiles):
+		# 		if (self.matrix[row][col] == 0):
+		# 			x = col * TILE_SIZE
+		# 			y = row * TILE_SIZE
+
+		# 			point_surf = pygame.Surface((TILE_SIZE, TILE_SIZE))
+		# 			point_surf.fill('RED')
+		# 			point_rect = point_surf.get_rect()
+		# 			point_rect.x = x
+		# 			point_rect.y = y
+		# 			Generic((x, y), point_surf, self.all_sprites)   
 
 class CameraGroup(pygame.sprite.Group):
 	def __init__(self):
