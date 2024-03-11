@@ -8,7 +8,7 @@ class Game:
 		self.screen = pygame.display.set_mode((SCREEN_WIDTH,SCREEN_HEIGHT))
 		pygame.display.set_caption('Sprout land')
 		self.clock = pygame.time.Clock()
-		self.level = Level()
+		self.level = Level(self.screen)
 
 	def run(self):
 		while True:

@@ -14,8 +14,9 @@ from menu import Menu
 from agent import Agent
 
 class Level:
-	def __init__(self):
+	def __init__(self, screen):
 
+		self.screen = screen
 		# get the display surface
 		self.display_surface = pygame.display.get_surface()
 
@@ -118,7 +119,9 @@ class Level:
 					interaction = self.interaction_sprites,
 					soil_layer = self.soil_layer,
 					tree_layer = self.tree_layer,
-					grid = self.grid
+					grid = self.grid,
+					screen = self.screen,
+					all_sprites = self.all_sprites
 				)
 
 
@@ -150,6 +153,7 @@ class Level:
 
 		# apples on the trees
 		# sometimes it decides not to recognize tree.apple_sprites
+		# check if there is an exception thrown?
 		for tree in self.tree_sprites.sprites():
 			# regrows trees - random amount
 			if (not tree.alive and tree.respawn == 0):
@@ -157,13 +161,16 @@ class Level:
 			elif (not tree.alive):
 				tree.respawn -= 1
 			# regenerates tree
+			# print(tree.apple_sprites.sprites())
 			for apple in tree.apple_sprites.sprites():
 				apple.kill()
-			tree.create_fruit()
-		
+			tree.create_fruit()	
 
 		# sky
 		self.sky.start_color = [255,255,255]
+
+		# reset agent position
+		self.agent.reset() 
 
 	def plant_collision(self):
 		if self.soil_layer.plant_sprites:
