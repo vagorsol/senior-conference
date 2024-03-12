@@ -46,17 +46,18 @@ class Entity(pygame.sprite.Sprite):
 		self.selected_seed = self.seeds[self.seed_index]
 		
 		# inventory
-		# self.item_inventory = {
-		# 	'wood':   20,
-		# 	'apple':  20,
-		# 	'corn':   20,
-		# 	'tomato': 20
-		# }
-		# self.seed_inventory = {
-		# 'corn': 5,
-		# 'tomato': 5
-		# }
-		# self.money = 200
+		# (shared for the time being)
+		self.item_inventory = {
+			'wood':   20,
+			'apple':  20,
+			'corn':   20,
+			'tomato': 20
+		}
+		self.seed_inventory = {
+		'corn': 5,
+		'tomato': 5
+		}
+		self.money = 200
 
 		# interaction
 		self.tree_sprites = tree_sprites

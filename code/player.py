@@ -9,35 +9,35 @@ class Player(Entity):
 		super().__init__(pos, group, collision_sprites, tree_sprites, interaction, soil_layer, 'character')
 		
 		# timers 
-		self.timers = {
-			'tool use': Timer(350,self.use_tool),
-			'tool switch': Timer(200),
-			'seed use': Timer(350,self.use_seed),
-			'seed switch': Timer(200),
-		}
+		# self.timers = {
+		# 	'tool use': Timer(350,self.use_tool),
+		# 	'tool switch': Timer(200),
+		# 	'seed use': Timer(350,self.use_seed),
+		# 	'seed switch': Timer(200),
+		# }
 
-		# tools 
-		self.tools = ['hoe','axe','water']
-		self.tool_index = 0
-		self.selected_tool = self.tools[self.tool_index]
+		# # tools 
+		# self.tools = ['hoe','axe','water']
+		# self.tool_index = 0
+		# self.selected_tool = self.tools[self.tool_index]
 
-		# seeds 
-		self.seeds = ['corn', 'tomato']
-		self.seed_index = 0
-		self.selected_seed = self.seeds[self.seed_index]
+		# # seeds 
+		# self.seeds = ['corn', 'tomato']
+		# self.seed_index = 0
+		# self.selected_seed = self.seeds[self.seed_index]
 		
 		# inventory
-		self.item_inventory = {
-			'wood':   20,
-			'apple':  20,
-			'corn':   20,
-			'tomato': 20
-		}
-		self.seed_inventory = {
-		'corn': 5,
-		'tomato': 5
-		}
-		self.money = 200
+		# self.item_inventory = {
+		# 	'wood':   20,
+		# 	'apple':  20,
+		# 	'corn':   20,
+		# 	'tomato': 20
+		# }
+		# self.seed_inventory = {
+		# 'corn': 5,
+		# 'tomato': 5
+		# }
+		# self.money = 200
 
 		# interaction
 		self.sleep = False
