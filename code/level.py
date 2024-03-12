@@ -162,9 +162,10 @@ class Level:
 				tree.respawn -= 1
 			# regenerates tree
 			# print(tree.apple_sprites.sprites())
-			for apple in tree.apple_sprites.sprites():
-				apple.kill()
-			tree.create_fruit()	
+			if (tree.alive):
+				for apple in tree.apple_sprites.sprites():
+					apple.kill()
+				tree.create_fruit()	
 
 		# sky
 		self.sky.start_color = [255,255,255]
@@ -211,12 +212,6 @@ class Level:
 		ground = pygame.image.load('../graphics/world/ground.png')
 		h_tiles, v_tiles = ground.get_width() // TILE_SIZE, ground.get_height() // TILE_SIZE
 				
-		# how to get all collidble sprites but also not the player or self. uh. hm. 
-		# for sprite in self.collision_sprites.sprites():
-		# 	if hasattr(sprite, 'hitbox'):
-		# 		sprite_rect = sprite.image.get_rect()
-		# 		print(pygame.math.Vector2(sprite_rect.center))
-				
 		self.matrix = [[1 for col in range(h_tiles)] for row in range(v_tiles)]
 		for x, y, _ in load_pygame('../data/map.tmx').get_layer_by_name('Collision').tiles():
 			self.matrix[y][x] = 0
@@ -229,7 +224,9 @@ class Level:
 		for sprite in self.nav_collision.sprites():
 			if hasattr(sprite, 'hitbox'):
 				self.matrix[sprite.rect.top // TILE_SIZE][sprite.rect.left // TILE_SIZE] = 0
-				
+		for tree in self.tree_layer:
+			# print(tree[0])
+			self.matrix[int(tree[1])][int(tree[0])] = 1
 		self.grid = Grid(range(h_tiles), range(v_tiles), self.matrix)
 
 		# for col in range(h_tiles):
