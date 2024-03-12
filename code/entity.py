@@ -1,6 +1,7 @@
 import pygame
 from settings import *
 from support import *
+from sprites import Tree
 from timer import Timer
 
 class Entity(pygame.sprite.Sprite):
@@ -74,7 +75,8 @@ class Entity(pygame.sprite.Sprite):
 		
 		if self.selected_tool == 'axe':
 			for tree in self.tree_sprites.sprites():
-				if tree.rect.collidepoint(self.target_pos):
+				
+				if tree.rect.collidepoint(self.target_pos) and isinstance(tree, Tree):
 					tree.damage()
 		
 		if self.selected_tool == 'water':
