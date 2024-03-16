@@ -212,6 +212,9 @@ class Level:
 		ground = pygame.image.load('../graphics/world/ground.png')
 		h_tiles, v_tiles = ground.get_width() // TILE_SIZE, ground.get_height() // TILE_SIZE
 				
+		# TODO: further debugging tiles or figuring out Tree List. 
+		# or doing tree list Differently (check sides, or have "tree and associated coordinates," then pick linearlly the closest tree)
+		# (it it the "smartest"? no. do i really care at this point? no not really)
 		self.matrix = [[1 for col in range(h_tiles)] for row in range(v_tiles)]
 		for x, y, _ in load_pygame('../data/map.tmx').get_layer_by_name('Collision').tiles():
 			self.matrix[y][x] = 0
@@ -224,23 +227,25 @@ class Level:
 		for sprite in self.nav_collision.sprites():
 			if hasattr(sprite, 'hitbox'):
 				self.matrix[sprite.rect.top // TILE_SIZE][sprite.rect.left // TILE_SIZE] = 0
-		for tree in self.tree_layer:
-			# print(tree[0])
-			self.matrix[int(tree[1])][int(tree[0])] = 1
+		# for tree in self.tree_layer:
+		# 	# print(tree[0])
+		# 	self.matrix[int(tree[1])][int(tree[0])] = 1
 		self.grid = Grid(range(h_tiles), range(v_tiles), self.matrix)
+		self.draw_grid(h_tiles, v_tiles)		
 
-		# for col in range(h_tiles):
-		# 	for row in range(v_tiles):
-		# 		if (self.matrix[row][col] == 0):
-		# 			x = col * TILE_SIZE
-		# 			y = row * TILE_SIZE
+	def draw_grid(self, h_tiles, v_tiles):
+		for col in range(h_tiles):
+			for row in range(v_tiles):
+				if (self.matrix[row][col] == 0):
+					x = col * TILE_SIZE
+					y = row * TILE_SIZE
 
-		# 			point_surf = pygame.Surface((TILE_SIZE, TILE_SIZE))
-		# 			point_surf.fill('RED')
-		# 			point_rect = point_surf.get_rect()
-		# 			point_rect.x = x
-		# 			point_rect.y = y
-		# 			Generic((x, y), point_surf, self.all_sprites)   
+					point_surf = pygame.Surface((TILE_SIZE, TILE_SIZE))
+					point_surf.fill('RED')
+					point_rect = point_surf.get_rect()
+					point_rect.x = x
+					point_rect.y = y
+					Generic((x, y), point_surf, [self.all_sprites, self.collision_sprites])   
 
 class CameraGroup(pygame.sprite.Group):
 	def __init__(self):
