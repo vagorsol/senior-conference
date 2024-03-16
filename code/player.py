@@ -43,6 +43,8 @@ class Player(Entity):
 		self.sleep = False
 		self.toggle_shop = toggle_shop
 
+	# when press key (axe) and movement at the same time, weird positional things can happen
+	# but tbh that's a low priority thing rn
 	def input(self):
 		keys = pygame.key.get_pressed()
 
