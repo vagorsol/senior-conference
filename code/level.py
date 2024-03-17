@@ -160,9 +160,8 @@ class Level:
 				tree.reset()
 			elif (not tree.alive):
 				tree.respawn -= 1
-			# regenerates tree
-			# print(tree.apple_sprites.sprites())
-			if (tree.alive):
+			# regenerates fruit on tree
+			if (tree and tree.alive and type(tree) is Tree):
 				for apple in tree.apple_sprites.sprites():
 					apple.kill()
 				tree.create_fruit()	
@@ -227,11 +226,23 @@ class Level:
 		for sprite in self.nav_collision.sprites():
 			if hasattr(sprite, 'hitbox'):
 				self.matrix[sprite.rect.top // TILE_SIZE][sprite.rect.left // TILE_SIZE] = 0
-		# for tree in self.tree_layer:
-		# 	# print(tree[0])
-		# 	self.matrix[int(tree[1])][int(tree[0])] = 1
+		for tree in self.tree_layer:
+			self.matrix[int(tree[1])][int(tree[0])] = 0
 		self.grid = Grid(range(h_tiles), range(v_tiles), self.matrix)
-		self.draw_grid(h_tiles, v_tiles)		
+		# self.draw_tree_collision
+		# self.draw_grid(h_tiles, v_tiles)		
+
+	def draw_tree_collision(self, h_tiles, v_tiles):
+		for tree in self.tree_layer:
+			x = int(tree[0]) * TILE_SIZE
+			y = int(tree[1]) * TILE_SIZE
+
+			point_surf = pygame.Surface((TILE_SIZE, TILE_SIZE))
+			point_surf.fill('RED')
+			point_rect = point_surf.get_rect()
+			point_rect.x = x
+			point_rect.y = y
+			Generic((x, y), point_surf, self.all_sprites, z = LAYERS['rain drops'])   
 
 	def draw_grid(self, h_tiles, v_tiles):
 		for col in range(h_tiles):
@@ -245,7 +256,7 @@ class Level:
 					point_rect = point_surf.get_rect()
 					point_rect.x = x
 					point_rect.y = y
-					Generic((x, y), point_surf, [self.all_sprites, self.collision_sprites])   
+					Generic((x, y), point_surf, self.all_sprites, z = LAYERS['rain drops'])   
 
 class CameraGroup(pygame.sprite.Group):
 	def __init__(self):
