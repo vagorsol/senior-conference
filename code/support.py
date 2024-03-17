@@ -1,4 +1,5 @@
 from os import walk
+from enum import Enum 
 import pygame
 
 def import_folder(path):
@@ -22,3 +23,15 @@ def import_folder_dict(path):
 			surface_dict[image.split('.')[0]] = image_surf
 
 	return surface_dict
+
+class Status(Enum):
+    SUCCESS = 0
+    FAILURE = 1
+    RUNNING = 2
+    NOT_RUNNING = 3
+
+class Direction(Enum):
+	NORTH = (0, -1)
+	SOUTH = (0, 1)
+	EAST = (1, 0)
+	WEST = (-1, 0)
