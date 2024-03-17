@@ -1,8 +1,6 @@
-import pygame
-import math
+import pygame, math
 from player import Player
-from status import Status
-from behavior import WaterBehavior, SeedBehavior, TreeBehavior
+from behavior import WaterBehavior, SeedBehavior, TreeBehavior, IdleBehavior
 from entity import *
 from settings import *
 from support import *
@@ -32,14 +30,20 @@ class Agent(Entity):
         self.setup()
 
     def setup(self):
+        # print(self.soil_layer.unwatered_tiles)
         water_behavior = WaterBehavior(self, self.soil_layer.unwatered_tiles, self.grid)
         seed_behavior = SeedBehavior(self, self.soil_layer.empty_soil_tiles, self.grid)
         tree_behavior = TreeBehavior(self, self.tree_layer, self.grid)
+        idle_behavior = IdleBehavior(self, self.grid, self.RESET_POS)
 
-        water_behavior.set_next_behavior(seed_behavior)
-        seed_behavior.set_next_behavior(tree_behavior)
+        # behavior chain
+        water_behavior.set_next_behavior(water_behavior)
+        # water_behavior.set_next_behavior(seed_behavior)
+        # seed_behavior.set_next_behavior(tree_behavior)
+        # tree_behavior.set_next_behavior(idle_behavior)
 
-        self.curr_behavior = tree_behavior
+        # should test action first i think
+        self.curr_behavior =  water_behavior # tree_behavior
 
     # pathing debugging function
     def draw_path(self, path):
@@ -58,12 +62,7 @@ class Agent(Entity):
         ceil_pos = (math.ceil(self.pos.x / TILE_SIZE),
                     math.ceil(self.pos.y / TILE_SIZE))
         floor_pos = (int(self.pos.x // TILE_SIZE), int(self.pos.y // TILE_SIZE))
-        # print("checking")
-        # print(ceil_pos)
-        # print(floor_pos)
-        # print(ceil_pos[0], floor_pos[1])
-        # print(floor_pos[0], ceil_pos[1])
-        # print(target)
+    
         if(ceil_pos == target 
            or floor_pos == target 
            or (ceil_pos[0], floor_pos[1]) == target 
@@ -76,12 +75,11 @@ class Agent(Entity):
     def move(self, dt):        
         start = self.grid.node(int(self.pos.x // TILE_SIZE), int(self.pos.y // TILE_SIZE))
         end = self.grid.node(int(self.target.x), int(self.target.y)) 
-        path, path_status = self.finder.find_path(start, end, self.grid)
+        path,_ = self.finder.find_path(start, end, self.grid)
         self.grid.cleanup()
-        # print(start)
-        if (path_status and path):
+        # print(path)
+        if (path):
             path.pop(0)
-            # print(path)
             # print(self.check_target_intersect((end.x, end.y)))
             if(path and not self.check_target_intersect((end.x, end.y))):
                 self.direction = (pygame.math.Vector2((path[0].x + 0.5)  * TILE_SIZE, (path[0].y + 0.5) * TILE_SIZE) 
@@ -111,13 +109,17 @@ class Agent(Entity):
         self.update_timers()
         self.get_target_pos()
         
+        # print(self.soil_layer.unwatered_tiles)
         # target = pygame.math.Vector2(37, 23)
-        if (self.curr_behavior != None):
+        if (self.curr_behavior and self.curr_behavior.status != Status.FAILURE):
             self.curr_behavior.update()
-        if (self.movement is not Status.SUCCESS):
+        else:
+            # set current behavior to this's next behavior
+            self.curr_behavior.status = Status.NOT_RUNNING
+            self.curr_behavior = self.curr_behavior.next_behavior
+        if (self.movement is not Status.SUCCESS and self.target):
             self.move(dt)
         self.animate(dt)
-        # for behavior make list and cycle through
     
     def reset(self):
         self.pos = pygame.math.Vector2(self.RESET_POS.x, self.RESET_POS.y)
