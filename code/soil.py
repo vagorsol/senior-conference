@@ -144,8 +144,12 @@ class SoilLayer:
 			for index_col, cell in enumerate(row):
 				if 'X' in cell and 'W' not in cell:
 					cell.append('W')
+
 					x = index_col * TILE_SIZE
 					y = index_row * TILE_SIZE
+					if pygame.math.Vector2(index_col, index_row) in self.unwatered_tiles:
+						self.unwatered_tiles.remove(pygame.math.Vector2(index_col, index_row))
+					
 					WaterTile((x,y), choice(self.water_surfs), [self.all_sprites, self.water_sprites])
 
 	def remove_water(self):
@@ -155,10 +159,11 @@ class SoilLayer:
 			sprite.kill()
 
 		# clean up the grid
-		for row in self.grid:
-			for cell in row:
+		for index_row, row in enumerate(self.grid):
+			for index_col, cell in enumerate(row):
 				if 'W' in cell:
 					cell.remove('W')
+					self.unwatered_tiles.append(pygame.math.Vector2(index_col, index_row))
 
 	def check_watered(self, pos):
 		x = pos[0] // TILE_SIZE
