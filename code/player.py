@@ -1,4 +1,4 @@
-import pygame
+import pygame, sys
 from entity import *
 from settings import *
 from support import *
@@ -49,6 +49,11 @@ class Player(Entity):
 		keys = pygame.key.get_pressed()
 
 		if not self.timers['tool use'].active and not self.sleep:
+			# escape key quit
+			if keys[pygame.K_ESCAPE]:
+				pygame.quit()
+				sys.exit()
+
 			# directions 
 			if keys[pygame.K_UP] or keys[pygame.K_w]:
 				self.direction.y = -1
