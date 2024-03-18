@@ -18,7 +18,6 @@ class Behavior():
         # setting as none because need to make the other behavior BEFORE linking them
         self.status = Status.NOT_RUNNING
         self.next_behavior = None 
-        # TODO: status and ticks()
 
     def set_path(self, pos, lst):
         start = self.grid.node(int(pos.x // TILE_SIZE), int(pos.y // TILE_SIZE))
@@ -41,36 +40,53 @@ class Behavior():
         pass
 
     def update(self):
-        # if the agent is not moving, set a target
-        # how to get it to action??
-        # TODO: figure out the looping logic wrt statuses and resets
         if (self.agent.movement == Status.NOT_RUNNING and self.status == Status.NOT_RUNNING):
-            if(self.agent.target):
-                self.set_path(self.agent.pos, self.list)
-            else: 
-                self.status = Status.FAILURE
+            self.set_path(self.agent.pos, self.list)
         else:
+            # TODO: do action just ONCE and not keep looping
             if (self.agent.movement == Status.SUCCESS):
-                # self.agent.movement = Status.NOT_RUNNING
+                self.agent.movement = Status.NOT_RUNNING
                 self.status = Status.RUNNING
-                self.action()
+                # print(not self.agent.timers['tool use'].active)
+                # if (self.status == Status.RUNNING):
+                #     self.status = Status.RUNNING
+                #     self.status = Status.NOT_RUNNING
+                #     self.action() 
+                
             elif (self.agent.movement == Status.FAILURE):
                 self.agent.movement = Status.NOT_RUNNING
                 self.status = Status.NOT_RUNNING
-            elif (self.agent.movement == Status.NOT_RUNNING and self.status == Status.RUNNING):
-                if (self.list):
-                    self.action()
-                else:
-                    self.status == Status.Success
 
+            if (self.status == Status.RUNNING):
+                self.status = Status.RUNNING
+                self.status = Status.NOT_RUNNING
+                if (not self.agent.timers['tool use'].active):
+                    self.action() 
+            # elif (self.agent.movement == Status.NOT_RUNNING and self.status == Status.RUNNING):
+            #     # print(self.list)
+            #     if (self.list):
+            #         # print("print")
+            #         print(self.timers['tool use'].active)
+            #         if (not self.timers['tool use'].active):
+            #             self.action()
+            #         else:
+            #             self.agent.use_tool()
+            #     else:
+            #         self.status == Status.Success
+
+    def reset(self):
+        self.status = Status.NOT_RUNNING
+        
 class WaterBehavior(Behavior):
     def __init__(self, agent, list, grid):
         super().__init__(agent, list, grid) 
         
     def action(self):
         # set the agent's selected tool to watering can and use it
-        self.agent.selected_tool = self.agent.tools[2]
+        self.agent.tool_index = 2
+        self.agent.selected_tool = self.agent.tools[self.agent.tool_index]
         self.agent.timers['tool use'].activate()
+        # self.agent.tim 
 
 class SeedBehavior(Behavior):
     def __init__(self, agent, list, grid):
@@ -103,7 +119,7 @@ class TreeBehavior(Behavior):
                 if (path and len(path) < min_len):
                     nearest_coor = end 
         self.agent.target = nearest_coor  
-
+        # TODO: make sure is facing "right" direction after reaching destination
     def action(self):
         # set the agent's selected tool to axe and then swing
         self.agent.selected_tool = self.agent.tools[1]
@@ -114,16 +130,16 @@ class TreeBehavior(Behavior):
             self.set_path(self.agent.pos, self.list)
         else:
             if (self.agent.movement == Status.SUCCESS):
-                # self.agent.movement = Status.
                 self.status = Status.RUNNING
                 self.action()
+                self.status = Status.NOT_RUNNING
             elif (self.agent.movement == Status.FAILURE):
                 # reset statuses
                 self.agent.movement = Status.NOT_RUNNING
                 self.status = Status.FAILURE
 
             elif (self.agent.movement == Status.NOT_RUNNING and self.status == Status.RUNNING):
-                if (self.agent.tree_layer):
+                if (self.list):
                     self.action()
                 else:
                     self.status == Status.Success
@@ -132,3 +148,4 @@ class IdleBehavior(Behavior):
     def __init__(self, agent, grid, reset_pos):
         list = [pygame.math.Vector2(reset_pos[0] // TILE_SIZE, reset_pos[1] // TILE_SIZE)]
         super().__init__(agent, list, grid)
+        self.next_behavior = self
