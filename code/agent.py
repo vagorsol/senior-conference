@@ -36,6 +36,8 @@ class Agent(Entity):
         tree_behavior = TreeBehavior(self, self.tree_layer, self.grid)
         idle_behavior = IdleBehavior(self, self.grid, self.RESET_POS)
 
+        self.behaviors = [water_behavior, seed_behavior, tree_behavior, idle_behavior]
+        
         # behavior chain
         water_behavior.set_next_behavior(water_behavior)
         # water_behavior.set_next_behavior(seed_behavior)
@@ -81,7 +83,8 @@ class Agent(Entity):
         if (path):
             path.pop(0)
             # print(self.check_target_intersect((end.x, end.y)))
-            if(path and not self.check_target_intersect((end.x, end.y))):
+            # if(path and not self.check_target_intersect((end.x, end.y))):
+            if (path):
                 self.direction = (pygame.math.Vector2((path[0].x + 0.5)  * TILE_SIZE, (path[0].y + 0.5) * TILE_SIZE) 
                                   - pygame.math.Vector2(self.pos.x, self.pos.y)).normalize()
                 self.movement = Status.RUNNING # flag for "currently moving"
@@ -109,17 +112,23 @@ class Agent(Entity):
         self.update_timers()
         self.get_target_pos()
         
-        # print(self.soil_layer.unwatered_tiles)
-        # target = pygame.math.Vector2(37, 23)
-        if (self.curr_behavior and self.curr_behavior.status != Status.FAILURE):
+        # self.timers['tool use'].activate()
+        if (self.curr_behavior.status != Status.FAILURE):
             self.curr_behavior.update()
         else:
-            # set current behavior to this's next behavior
+            # set current behavior to the next behavior
             self.curr_behavior.status = Status.NOT_RUNNING
             self.curr_behavior = self.curr_behavior.next_behavior
+            
         if (self.movement is not Status.SUCCESS and self.target):
             self.move(dt)
+        # print(self.curr_behavior.status.name)
         self.animate(dt)
     
     def reset(self):
         self.pos = pygame.math.Vector2(self.RESET_POS.x, self.RESET_POS.y)
+        # self.movement = Status.NOT_RUNNING
+        self.curr_behavior = self.behaviors[0]
+
+        for behavior in self.behaviors:
+            behavior.reset()
