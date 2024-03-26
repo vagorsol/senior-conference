@@ -112,22 +112,20 @@ class Agent(Entity):
         self.update_timers()
         self.get_target_pos()
         
-        # self.timers['tool use'].activate()
         if (self.curr_behavior.status != Status.FAILURE):
             self.curr_behavior.update()
         else:
             # set current behavior to the next behavior
             self.curr_behavior.status = Status.NOT_RUNNING
             self.curr_behavior = self.curr_behavior.next_behavior
-            
+        # print(self.target)
         if (self.movement is not Status.SUCCESS and self.target):
             self.move(dt)
-        # print(self.curr_behavior.status.name)
         self.animate(dt)
     
     def reset(self):
         self.pos = pygame.math.Vector2(self.RESET_POS.x, self.RESET_POS.y)
-        # self.movement = Status.NOT_RUNNING
+        self.movement = Status.NOT_RUNNING
         self.curr_behavior = self.behaviors[0]
 
         for behavior in self.behaviors:
