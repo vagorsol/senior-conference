@@ -80,6 +80,7 @@ class Level:
 				player_add = self.player_add,
 				tree_layer = self.tree_layer)
 			self.tree_layer.append(pygame.math.Vector2(obj.x // TILE_SIZE, obj.y // TILE_SIZE))
+			# print(obj.x // TILE_SIZE, obj.y // TILE_SIZE)
 			# pass tree layer to tree too
 
 		# wildflowers 
@@ -123,7 +124,6 @@ class Level:
 					screen = self.screen,
 					all_sprites = self.all_sprites
 				)
-
 
 		Generic(
 			pos = (0,0),
@@ -211,38 +211,48 @@ class Level:
 		ground = pygame.image.load('../graphics/world/ground.png')
 		h_tiles, v_tiles = ground.get_width() // TILE_SIZE, ground.get_height() // TILE_SIZE
 				
-		# TODO: further debugging tiles or figuring out Tree List. 
-		# or doing tree list Differently (check sides, or have "tree and associated coordinates," then pick linearlly the closest tree)
-		# (it it the "smartest"? no. do i really care at this point? no not really)
 		self.matrix = [[1 for col in range(h_tiles)] for row in range(v_tiles)]
 		for x, y, _ in load_pygame('../data/map.tmx').get_layer_by_name('Collision').tiles():
 			self.matrix[y][x] = 0
 		# house edge cases
-		for i in range(20, 27):
+		for i in range(21, 27):
 			self.matrix[i][19] = 0
 			self.matrix[i][20] = 0
 			self.matrix[i][27] = 0
 			self.matrix[i][28] = 0
-		for sprite in self.nav_collision.sprites():
-			if hasattr(sprite, 'hitbox'):
-				self.matrix[sprite.rect.top // TILE_SIZE][sprite.rect.left // TILE_SIZE] = 0
-		for tree in self.tree_layer:
-			self.matrix[int(tree[1])][int(tree[0])] = 0
+	
+		for tree in TREE_TILES:
+			for pos in tree:
+				self.matrix[pos[1]][pos[0]] = 0
+
 		self.grid = Grid(range(h_tiles), range(v_tiles), self.matrix)
-		# self.draw_tree_collision
-		# self.draw_grid(h_tiles, v_tiles)		
+		
+		# drawing test functions
+		self.draw_grid(h_tiles, v_tiles)	
+		self.draw_grid_lines(h_tiles, v_tiles)	
 
-	def draw_tree_collision(self, h_tiles, v_tiles):
-		for tree in self.tree_layer:
-			x = int(tree[0]) * TILE_SIZE
-			y = int(tree[1]) * TILE_SIZE
+	def draw_grid_lines(self, h_tiles, v_tiles):
+		for col in range(h_tiles):
+			x = col * TILE_SIZE
+			y = 0
 
-			point_surf = pygame.Surface((TILE_SIZE, TILE_SIZE))
-			point_surf.fill('RED')
+			point_surf = pygame.Surface((4, 39 * TILE_SIZE))
+			point_surf.fill('WHITE')
 			point_rect = point_surf.get_rect()
 			point_rect.x = x
 			point_rect.y = y
-			Generic((x, y), point_surf, self.all_sprites, z = LAYERS['rain drops'])   
+			Generic((x, y), point_surf, self.all_sprites, z = LAYERS['rain drops'])
+
+		for row in range(v_tiles):		
+			x = 0
+			y = row * TILE_SIZE
+
+			point_surf = pygame.Surface((49 * TILE_SIZE, 4))
+			point_surf.fill('WHITE')
+			point_rect = point_surf.get_rect()
+			point_rect.x = x
+			point_rect.y = y
+			Generic((x, y), point_surf, self.all_sprites, z = LAYERS['rain drops'])
 
 	def draw_grid(self, h_tiles, v_tiles):
 		for col in range(h_tiles):
