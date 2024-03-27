@@ -1,6 +1,6 @@
 import pygame, math
 from player import Player
-from behavior import WaterBehavior, SeedBehavior, TreeBehavior, IdleBehavior
+from behavior import *
 from entity import *
 from settings import *
 from support import *
@@ -30,22 +30,22 @@ class Agent(Entity):
         self.setup()
 
     def setup(self):
-        # print(self.soil_layer.unwatered_tiles)
         water_behavior = WaterBehavior(self, self.soil_layer.unwatered_tiles, self.grid)
-        seed_behavior = SeedBehavior(self, self.soil_layer.empty_soil_tiles, self.grid)
+
         tree_behavior = TreeBehavior(self, self.tree_layer, self.grid)
         idle_behavior = IdleBehavior(self, self.grid, self.RESET_POS)
 
-        self.behaviors = [water_behavior, seed_behavior, tree_behavior, idle_behavior]
+        self.behaviors = [water_behavior, tree_behavior, idle_behavior]
         
         # behavior chain
         water_behavior.set_next_behavior(water_behavior)
-        # water_behavior.set_next_behavior(seed_behavior)
-        # seed_behavior.set_next_behavior(tree_behavior)
+        # water_behavior.set_next_behavior(tree_behavior)
         # tree_behavior.set_next_behavior(idle_behavior)
 
         # should test action first i think
         self.curr_behavior =  water_behavior # tree_behavior
+        # user manual toggle behavior 
+        # decision making algorithm (currently - rules, loosely; ultility based on how much work needs to be done & how importnat it is)
 
     # pathing debugging function
     def draw_path(self, path):
@@ -80,6 +80,7 @@ class Agent(Entity):
         path,_ = self.finder.find_path(start, end, self.grid)
         self.grid.cleanup()
         # print(path)
+        # for tree: make sure is facing right direction at the end of the path and can hit the tree
         if (path):
             path.pop(0)
             # print(self.check_target_intersect((end.x, end.y)))
@@ -100,9 +101,9 @@ class Agent(Entity):
             self.status = 'down'
         elif self.direction.y < 0:
             self.status = 'up' 
-        if self.direction.x > 0 and self.direction.x > self.direction.y:
+        if self.direction.x > 0 and abs(self.direction.x) > abs(self.direction.y):
             self.status = 'right'
-        elif self.direction.x < 0 and self.direction.x < self.direction.y:
+        elif self.direction.x < 0 and abs(self.direction.x) > abs(self.direction.y):
             self.status = 'left' 
         # self.draw_path(path)
         super().move(dt) 

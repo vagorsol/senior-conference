@@ -23,11 +23,9 @@ class Behavior():
         start = self.grid.node(int(pos.x // TILE_SIZE), int(pos.y // TILE_SIZE))
         min_len = sys.maxsize
         nearest_coor = None
-        # print(f"list: {self.list}")
+
         for coor in self.list:      
-            end = self.grid.node(int(coor.x), int(coor.y)) 
-            # print(f"start: {start} end: {end}")
-            # print(start, end)
+            end = self.grid.node(int(coor.x), int(coor.y))         
             path = self.finder.find_path(start, end, self.grid)
             self.grid.cleanup()
             
@@ -35,7 +33,6 @@ class Behavior():
                 min_len = len(path[0])
                 nearest_coor = end 
         self.agent.target = nearest_coor 
-        # print(start, nearest_coor) 
     
     def set_next_behavior(self, behavior):
         self.next_behavior = behavior
@@ -51,8 +48,9 @@ class Behavior():
             # ARGHHHHH LOGIC!!!! MATH!! COMPLICATED MATHS AND LOGIC!!!
             # b - when multiple unwatered tiles, stays on the singular tile
             #  and c - FUNKY
+            # water only list of tiles at beginning
+            # flag to tile?
             if (self.agent.movement == Status.NOT_RUNNING and self.status == Status.NOT_RUNNING):
-                # print("trying to set a new path")
                 self.set_path(self.agent.pos)
             else:
                 if (self.agent.movement == Status.SUCCESS):
@@ -85,14 +83,6 @@ class WaterBehavior(Behavior):
         self.agent.selected_tool = self.agent.tools[self.agent.tool_index]
         self.agent.timers['tool use'].activate()
 
-class SeedBehavior(Behavior):
-    def __init__(self, agent, list, grid):
-        super().__init__(agent, list, grid)   
-    
-    def action(self):
-        self.agent.timers['seed use'].activate()
-        # need to pick seed and check that there are seeds to be planted first too
-
 class TreeBehavior(Behavior):
     def __init__(self, agent, list, grid):
         super().__init__(agent, list, grid)  
@@ -111,7 +101,6 @@ class TreeBehavior(Behavior):
                     nearest_coor = end 
         self.agent.target = nearest_coor  
        
-    # TODO: make sure is facing in "right" direction after reaching destination
     def action(self):
         # set the agent's selected tool to axe and then swing
         self.agent.tool_index = 1
