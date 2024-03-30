@@ -212,18 +212,17 @@ class Level:
 		h_tiles, v_tiles = ground.get_width() // TILE_SIZE, ground.get_height() // TILE_SIZE
 				
 		self.matrix = [[1 for col in range(h_tiles)] for row in range(v_tiles)]
-		for x, y, _ in load_pygame('../data/map.tmx').get_layer_by_name('Collision').tiles():
-			self.matrix[y][x] = 0
-		# house edge cases
-		for i in range(21, 27):
-			self.matrix[i][19] = 0
-			self.matrix[i][20] = 0
-			self.matrix[i][27] = 0
-			self.matrix[i][28] = 0
+		# for x, y, _ in load_pygame('../data/map.tmx').get_layer_by_name('Collision').tiles():
+		# 	self.matrix[y][x] = 0
+		# # house edge cases
+		# for i in range(21, 27):
+		# 	self.matrix[i][19] = 0
+		# 	self.matrix[i][20] = 0
+		# 	self.matrix[i][27] = 0
+		# 	self.matrix[i][28] = 0
 	
-		for tree in TREE_TILES:
-			for pos in tree:
-				self.matrix[pos[1]][pos[0]] = 0
+		for pos in TREE_TILES:
+			self.matrix[pos[1]][pos[0]] = 0
 
 		self.grid = Grid(range(h_tiles), range(v_tiles), self.matrix)
 		
@@ -266,7 +265,7 @@ class Level:
 					point_rect = point_surf.get_rect()
 					point_rect.x = x
 					point_rect.y = y
-					Generic((x, y), point_surf, self.all_sprites, z = LAYERS['rain drops'])   
+					Generic((x, y), point_surf, self.all_sprites, z = LAYERS['rain floor'])   
 
 class CameraGroup(pygame.sprite.Group):
 	def __init__(self):
