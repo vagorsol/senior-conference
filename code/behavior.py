@@ -39,9 +39,7 @@ class Behavior():
     def update(self):
         if (self.list):
             
-            # a - isn't always in the hit box (this is movement debugging, it picks the right one, though
-            # ^ this is "how do i get it to point in the direction of the tile"
-            # ARGHHHHH LOGIC!!!! MATH!! COMPLICATED MATHS AND LOGIC!!!
+            # how do i get it to point in the direction of the tile"
             if (self.agent.movement == Status.NOT_RUNNING):
                 self.set_path()
             else:
@@ -73,7 +71,6 @@ class WaterBehavior(Behavior):
             for index_col, cell in enumerate(row):
                 if 'X' in cell and not 'W' in cell:
                     self.list.append(pygame.math.Vector2(index_col, index_row))
-        # print(self.list)
         return self.list
 
     def action(self):
