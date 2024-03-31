@@ -10,12 +10,11 @@ from pathfinding.finder.a_star import AStarFinder
 from pathfinding.core.diagonal_movement import DiagonalMovement
 
 class Agent(Entity):
-    def __init__(self, pos, player, group, collision_sprites, tree_sprites, interaction, soil_layer, tree_layer, grid, screen, all_sprites):
+    def __init__(self, pos, player, group, collision_sprites, tree_sprites, interaction, soil_layer, grid, screen, all_sprites):
         super().__init__(pos, group, collision_sprites, tree_sprites, interaction, soil_layer, "agent")
         
         self.player = player
         self.direction.x = 0
-        self.tree_layer = tree_layer
         self.grid = grid
         self.finder = AStarFinder(diagonal_movement = DiagonalMovement.never) 
         self.RESET_POS = pygame.math.Vector2(pos[0], pos[1])
@@ -30,22 +29,36 @@ class Agent(Entity):
         self.setup()
 
     def setup(self):
-        water_behavior = WaterBehavior(self, self.soil_layer.unwatered_tiles, self.grid)
-
-        tree_behavior = TreeBehavior(self, self.tree_layer, self.grid)
-        idle_behavior = IdleBehavior(self, self.grid, self.RESET_POS)
-
-        self.behaviors = [water_behavior, tree_behavior, idle_behavior]
-        
-        # behavior chain
-        water_behavior.set_next_behavior(water_behavior)
-        # water_behavior.set_next_behavior(tree_behavior)
-        # tree_behavior.set_next_behavior(idle_behavior)
+        self.water_behavior = WaterBehavior(agent = self, 
+                                            soil_tiles = self.soil_layer, 
+                                            grid = self.grid, 
+                                            weight = 2)
+        self.tree_behavior = TreeBehavior(agent = self, 
+                                          trees = self.tree_sprites, 
+                                          grid = self.grid, 
+                                          weight = 1)
+        self.idle_behavior = IdleBehavior(agent = self, 
+                                          grid = self.grid, 
+                                          reset_pos = self.RESET_POS)
 
         # should test action first i think
-        self.curr_behavior =  water_behavior # tree_behavior
+        self.curr_behavior =  self.idle_behavior
         # user manual toggle behavior 
         # decision making algorithm (currently - rules, loosely; ultility based on how much work needs to be done & how importnat it is)
+
+    def select_behavior(self):
+        weight_water = self.water_behavior.weight * len(self.water_behavior.get_tiles())
+        weight_trees = self.tree_behavior.weight * len(self.tree_behavior.get_tiles())
+
+        # print(len(self.water_behavior.get_tiles()))
+        # print(len(self.tree_behavior.get_tiles()))
+
+        if (weight_water >= weight_trees):
+            self.curr_behavior = self.water_behavior
+        elif (weight_water < weight_trees):
+            self.curr_behavior = self.tree_behavior
+        elif (weight_water == 0 and weight_trees == 0):
+            self.curr_behavior = self.idle_behavior
 
     # pathing debugging function
     def draw_path(self, path):
@@ -113,15 +126,20 @@ class Agent(Entity):
         self.update_timers()
         self.get_target_pos()
         
-        if (self.curr_behavior.status != Status.FAILURE):
+        # point in direction of target before doing the action
+
+        # check if the behavior has finished running (either success or failure)    
+        if (self.curr_behavior.status == Status.RUNNING):
             self.curr_behavior.update()
         else:
-            # set current behavior to the next behavior
+            # select a new behavior
             self.curr_behavior.status = Status.NOT_RUNNING
-            self.curr_behavior = self.curr_behavior.next_behavior
+            self.select_behavior()
+            self.curr_behavior.status = Status.RUNNING
         # print(self.target)
         if (self.movement is not Status.SUCCESS and self.target):
             self.move(dt)
+
         self.animate(dt)
     
     def reset(self):
