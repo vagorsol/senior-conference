@@ -45,7 +45,8 @@ class Agent(Entity):
         self.behaviors = [self.idle_behavior, self.water_behavior, self.tree_behavior]
 
         self.curr_behavior =  self.idle_behavior
-        # user manual toggle behavior 
+        # user manual toggle behavior - if [insert command args], else set to correspoinding key [1 to water, 2 to tree]
+        # double check with aline if it's water one tile or all
         # decision making algorithm (currently - rules, loosely; ultility based on how much work needs to be done & how importnat it is)
 
     def select_behavior(self):
@@ -86,7 +87,6 @@ class Agent(Entity):
         else:
             return False
 
-    # todo: find tune pathing
     def move(self, dt):        
         start = self.grid.node(int(self.pos.x // TILE_SIZE), int(self.pos.y // TILE_SIZE))
         end = self.grid.node(int(self.target.x), int(self.target.y)) 
@@ -95,15 +95,11 @@ class Agent(Entity):
 
         if (self.target_object):
             path.append(self.target_object)
-        # path.append(end)
-        # print(path)
         # for tree: make sure is facing right direction at the end of the path and can hit the tree
         if (path):
             path.pop(0)
-            # print(self.check_target_intersect((end.x, end.y)))
-            # print(len(path), self.pos)
             if (path):
-                self.direction = (pygame.math.Vector2((path[0].x + 0.5)  * TILE_SIZE, (path[0].y + 0.5) * TILE_SIZE) 
+                self.direction = (pygame.math.Vector2((path[0].x + 0.5)  * TILE_SIZE, (path[0].y + 0.25) * TILE_SIZE) 
                                   - pygame.math.Vector2(self.pos.x, self.pos.y)).normalize()
                 self.movement = Status.RUNNING # flag for "currently moving"
             else:
