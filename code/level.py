@@ -228,8 +228,8 @@ class Level:
 		self.grid = Grid(range(h_tiles), range(v_tiles), self.matrix)
 		
 		# drawing test functions
-		self.draw_grid(h_tiles, v_tiles)	
-		self.draw_grid_lines(h_tiles, v_tiles)	
+		# self.draw_grid(h_tiles, v_tiles)	
+		# self.draw_grid_lines(h_tiles, v_tiles)	
 
 	def draw_grid_lines(self, h_tiles, v_tiles):
 		for col in range(h_tiles):
