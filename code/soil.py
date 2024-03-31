@@ -65,10 +65,6 @@ class SoilLayer:
 		self.water_sprites = pygame.sprite.Group()
 		self.plant_sprites = pygame.sprite.Group()
 
-		# lists
-		self.empty_soil_tiles = []
-		self.unwatered_tiles = []
-
 		# graphics
 		self.soil_surfs = import_folder_dict('../graphics/soil/')
 		self.water_surfs = import_folder('../graphics/soil_water')
@@ -114,15 +110,8 @@ class SoilLayer:
 					self.create_soil_tiles()
 					tile = pygame.math.Vector2(x, y)
 
-					# add if list doesn't contains
-					if tile not in self.empty_soil_tiles:
-						self.empty_soil_tiles.append(tile)
-
 					if self.raining:
 						self.water_all()
-					else:
-						if tile not in self.unwatered_tiles:
-							self.unwatered_tiles.append(tile)
 
 	def water(self, target_pos):
 		for soil_sprite in self.soil_sprites.sprites():
@@ -131,9 +120,6 @@ class SoilLayer:
 				x = soil_sprite.rect.x // TILE_SIZE
 				y = soil_sprite.rect.y // TILE_SIZE
 				self.grid[y][x].append('W')
-				
-				if pygame.math.Vector2(x, y) in self.unwatered_tiles:
-					self.unwatered_tiles.remove(pygame.math.Vector2(x, y))
 
 				pos = soil_sprite.rect.topleft
 				surf = choice(self.water_surfs)
@@ -147,13 +133,10 @@ class SoilLayer:
 
 					x = index_col * TILE_SIZE
 					y = index_row * TILE_SIZE
-					if pygame.math.Vector2(index_col, index_row) in self.unwatered_tiles:
-						self.unwatered_tiles.remove(pygame.math.Vector2(index_col, index_row))
 					
 					WaterTile((x,y), choice(self.water_surfs), [self.all_sprites, self.water_sprites])
 
 	def remove_water(self):
-
 		# destroy all water sprites
 		for sprite in self.water_sprites.sprites():
 			sprite.kill()
@@ -163,7 +146,6 @@ class SoilLayer:
 			for index_col, cell in enumerate(row):
 				if 'W' in cell:
 					cell.remove('W')
-					self.unwatered_tiles.append(pygame.math.Vector2(index_col, index_row))
 
 	def check_watered(self, pos):
 		x = pos[0] // TILE_SIZE
@@ -182,7 +164,6 @@ class SoilLayer:
 
 				if 'P' not in self.grid[y][x]:
 					self.grid[y][x].append('P')
-					self.empty_soil_tiles.remove(pygame.math.Vector2(x, y))
 					Plant(seed, [self.all_sprites, self.plant_sprites, self.collision_sprites], soil_sprite, self.check_watered)
 
 	def update_plants(self):
