@@ -1,7 +1,7 @@
 import pygame, sys
 from support import Status, Direction
-from timer import Timer
 from settings import *
+from sprites import Tree
 from pathfinding.core.grid import Grid
 from pathfinding.finder.a_star import AStarFinder
 from pathfinding.core.diagonal_movement import DiagonalMovement 
@@ -9,18 +9,16 @@ from pathfinding.core.diagonal_movement import DiagonalMovement
 DIRECTIONS = [Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST]
 
 class Behavior():
-    def __init__(self, agent, list, grid):
+    def __init__(self, agent, grid, weight):
         self.agent = agent
-        self.list = list
+        self.list = []
         self.grid = grid
+        self.weight = weight
         self.finder = AStarFinder(diagonal_movement = DiagonalMovement.never)
+        self.status = Status.NOT_RUNNING # setting status as not running by default
 
-        # setting as none because need to make the other behavior BEFORE linking them
-        self.status = Status.NOT_RUNNING
-        self.next_behavior = None 
-
-    def set_path(self, pos):
-        start = self.grid.node(int(pos.x // TILE_SIZE), int(pos.y // TILE_SIZE))
+    def set_path(self):
+        start = self.grid.node(int(self.agent.pos.x // TILE_SIZE), int(self.agent.pos.y // TILE_SIZE))
         min_len = sys.maxsize
         nearest_coor = None
 
@@ -28,55 +26,51 @@ class Behavior():
             end = self.grid.node(int(coor.x), int(coor.y))         
             path = self.finder.find_path(start, end, self.grid)
             self.grid.cleanup()
-            
+
             if (path and len(path[0]) < min_len):
                 min_len = len(path[0])
                 nearest_coor = end 
         self.agent.target = nearest_coor 
-    
-    def set_next_behavior(self, behavior):
-        self.next_behavior = behavior
 
     def action(self):
         pass
 
     def update(self):
         if (self.list):
-            # print(self.agent.movement, self.status)
-            # a - isn't always in the hit box (this is movement debugging, it picks the right one, though
-            # ^ this is "how do i get it to point in the direction of the tile"
-            # ARGHHHHH LOGIC!!!! MATH!! COMPLICATED MATHS AND LOGIC!!!
-            # b - when multiple unwatered tiles, stays on the singular tile
-            #  and c - FUNKY
-            # water only list of tiles at beginning
-            # flag to tile?
-            if (self.agent.movement == Status.NOT_RUNNING and self.status == Status.NOT_RUNNING):
-                self.set_path(self.agent.pos)
+            if (self.agent.movement == Status.NOT_RUNNING):
+                self.set_path()
             else:
                 if (self.agent.movement == Status.SUCCESS):
                     self.agent.movement = Status.NOT_RUNNING
-                    self.status = Status.RUNNING     
-                   
                 elif (self.agent.movement == Status.FAILURE):
                     self.agent.movement = Status.NOT_RUNNING
                     self.status = Status.FAILURE
-                if (self.status == Status.RUNNING): 
+                if (self.status == Status.RUNNING and self.agent.movement == Status.NOT_RUNNING): 
                     if (not self.agent.timers['tool use'].active):
                         self.action() 
                     else: 
-                        self.status = Status.NOT_RUNNING
-                        self.agent.movement = Status.NOT_RUNNING
+                        self.status = Status.SUCCESS
         else:
-            self.status = Status.NOT_RUNNING
+            self.status = Status.FAILURE
             self.agent.movement = Status.NOT_RUNNING
     
     def reset(self):
+        self.list = []
         self.status = Status.NOT_RUNNING
         
 class WaterBehavior(Behavior):
-    def __init__(self, agent, list, grid):
-        super().__init__(agent, list, grid) 
-        
+    def __init__(self, agent, soil_tiles, grid, weight):
+        self.soil_tiles = soil_tiles
+        super().__init__(agent, grid, weight) 
+
+    def get_tiles(self):
+        self.list = []
+        for index_row, row in enumerate(self.soil_tiles.grid):
+            for index_col, cell in enumerate(row):
+                if 'X' in cell and not 'W' in cell:
+                    self.list.append(pygame.math.Vector2(index_col, index_row))
+        return self.list
+
     def action(self):
         # set the agent's selected tool to watering can and use it
         self.agent.tool_index = 2
@@ -84,21 +78,39 @@ class WaterBehavior(Behavior):
         self.agent.timers['tool use'].activate()
 
 class TreeBehavior(Behavior):
-    def __init__(self, agent, list, grid):
-        super().__init__(agent, list, grid)  
-        
-    def set_path(self, pos, lst):
-        start = self.grid.node(int(pos.x // TILE_SIZE), int(pos.y // TILE_SIZE))
+    def __init__(self, agent, trees, grid, weight):
+        self.trees = trees
+        self.selected_tree = None
+        super().__init__(agent, grid, weight)  
+
+    def get_tiles(self):
+        self.list = []
+        for tree in self.trees:
+            if tree.alive:
+                self.list.append(tree)
+        return self.list
+  
+    def set_path(self):
+        start = self.grid.node(int(self.agent.pos.x // TILE_SIZE), int(self.agent.pos.y // TILE_SIZE))
         min_len = sys.maxsize
         nearest_coor = None
 
-        for coor in lst: 
-            for dir in DIRECTIONS:   
-                end = self.grid.node(int(coor.x)  + dir.value[0], int(coor.y) + dir.value[1]) 
-                path,_ = self.finder.find_path(start, end, self.grid)
-                self.grid.cleanup()
-                if (path and len(path) < min_len):
-                    nearest_coor = end 
+        for tree in self.list:
+            if (type(tree) is Tree and tree.alive):
+                coor = pygame.math.Vector2(tree.pos[0] // TILE_SIZE, tree.pos[1] // TILE_SIZE)
+                # if (tree.pos[0], tree.pos[1]) in TREE_POS:
+                #     coor = TREE_POS.get((tree.pos[0], tree[1]))
+                # else:
+                #   continue
+                
+                for dir in DIRECTIONS:   
+                    end = self.grid.node(int(coor.x)  + dir.value[0], int(coor.y) + dir.value[1]) 
+                    path,_ = self.finder.find_path(start, end, self.grid)
+                    self.grid.cleanup()
+                    if (path and len(path) < min_len):
+                        nearest_coor = end 
+                        self.selected_tree = tree
+                        self.agent.target_object = self.grid.node(int(tree.pos[0] // TILE_SIZE), int(tree.pos[1] // TILE_SIZE))
         self.agent.target = nearest_coor  
        
     def action(self):
@@ -106,9 +118,15 @@ class TreeBehavior(Behavior):
         self.agent.tool_index = 1
         self.agent.selected_tool = self.agent.tools[self.agent.tool_index]
         self.agent.timers['tool use'].activate()
+    
+    def update(self):
+        if (self.selected_tree is None or (type(self.selected_tree) is Tree and self.selected_tree.alive)):
+            super().update()
+        if (self.selected_tree is not None and not self.selected_tree.alive):
+            self.status = Status.SUCCESS
+            super().update()
 
 class IdleBehavior(Behavior):
-    def __init__(self, agent, grid, reset_pos):
-        list = [pygame.math.Vector2(reset_pos[0] // TILE_SIZE, reset_pos[1] // TILE_SIZE)]
-        super().__init__(agent, list, grid)
-        self.next_behavior = self
+    def __init__(self, agent, grid, reset_pos):     
+        super().__init__(agent, grid, 0)
+        self.list = [pygame.math.Vector2(reset_pos[0] // TILE_SIZE, reset_pos[1] // TILE_SIZE)]

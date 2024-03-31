@@ -63,7 +63,7 @@ class Particle(Generic):
 			self.kill()
 
 class Tree(Generic):
-	def __init__(self, pos, surf, groups, name, player_add, tree_layer):
+	def __init__(self, pos, surf, groups, name, player_add):
 		super().__init__(pos, surf, groups)
 
 		# tree attributes
@@ -79,8 +79,6 @@ class Tree(Generic):
 		self.create_fruit()
 
 		self.player_add = player_add
-		self.tree_layer = tree_layer
-		self.pos_coor = pygame.math.Vector2(pos[0] // TILE_SIZE, pos[1] // TILE_SIZE)
 		
 		self.tree_surf = surf
 		self.pos = pos
@@ -115,7 +113,6 @@ class Tree(Generic):
 			self.rect = self.image.get_rect(midbottom = self.rect.midbottom)
 			self.hitbox = self.rect.copy().inflate(-10,-self.rect.height * 0.6)
 			self.alive = False
-			self.tree_layer.remove(self.pos_coor)
 			self.player_add('wood')
 			self.respawn = randint(0,1) # sets a "respawn" timer of 0-1 days
 
@@ -137,7 +134,6 @@ class Tree(Generic):
 	def reset(self):
 		if (not self.alive):
 			self.health = 5
-			self.tree_layer.append(self.pos_coor)
 			self.alive = True
 
 			self.image = self.tree_surf

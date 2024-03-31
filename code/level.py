@@ -28,7 +28,6 @@ class Level:
 		self.interaction_sprites = pygame.sprite.Group()
 
 		self.soil_layer = SoilLayer(self.all_sprites, self.collision_sprites)
-		self.tree_layer = []
 		self.setup()
 		self.overlay = Overlay(self.player)
 		self.transition = Transition(self.reset, self.player)
@@ -77,11 +76,8 @@ class Level:
 				surf = obj.image, 
 				groups = [self.all_sprites, self.collision_sprites, self.tree_sprites, self.nav_collision], 
 				name = obj.name,
-				player_add = self.player_add,
-				tree_layer = self.tree_layer)
-			self.tree_layer.append(pygame.math.Vector2(obj.x // TILE_SIZE, obj.y // TILE_SIZE))
-			# print(obj.x // TILE_SIZE, obj.y // TILE_SIZE)
-			# pass tree layer to tree too
+				player_add = self.player_add
+			)
 
 		# wildflowers 
 		for obj in tmx_data.get_layer_by_name('Decoration'):
@@ -119,7 +115,6 @@ class Level:
 					tree_sprites = self.tree_sprites,
 					interaction = self.interaction_sprites,
 					soil_layer = self.soil_layer,
-					tree_layer = self.tree_layer,
 					grid = self.grid,
 					screen = self.screen,
 					all_sprites = self.all_sprites
@@ -214,6 +209,9 @@ class Level:
 		self.matrix = [[1 for col in range(h_tiles)] for row in range(v_tiles)]
 		for x, y, _ in load_pygame('../data/map.tmx').get_layer_by_name('Collision').tiles():
 			self.matrix[y][x] = 0
+		for x, y, _ in load_pygame('../data/map.tmx').get_layer_by_name('Fence').tiles():
+			self.matrix[y][x] = 0
+
 		# house edge cases
 		for i in range(21, 27):
 			self.matrix[i][19] = 0
