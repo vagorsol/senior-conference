@@ -22,7 +22,6 @@ class Behavior():
         min_len = sys.maxsize
         nearest_coor = None
 
-        # print(self.list)
         for coor in self.list:      
             end = self.grid.node(int(coor.x), int(coor.y))         
             path = self.finder.find_path(start, end, self.grid)
@@ -38,8 +37,6 @@ class Behavior():
 
     def update(self):
         if (self.list):
-            
-            # how do i get it to point in the direction of the tile"
             if (self.agent.movement == Status.NOT_RUNNING):
                 self.set_path()
             else:
@@ -58,6 +55,7 @@ class Behavior():
             self.agent.movement = Status.NOT_RUNNING
     
     def reset(self):
+        self.list = []
         self.status = Status.NOT_RUNNING
         
 class WaterBehavior(Behavior):
@@ -79,9 +77,6 @@ class WaterBehavior(Behavior):
         self.agent.selected_tool = self.agent.tools[self.agent.tool_index]
         self.agent.timers['tool use'].activate()
 
-    # def update(self):
-    #     self.list = self.get_tiles()
-    #     super().update()
 class TreeBehavior(Behavior):
     def __init__(self, agent, trees, grid, weight):
         self.trees = trees
@@ -94,9 +89,7 @@ class TreeBehavior(Behavior):
             if tree.alive:
                 self.list.append(tree)
         return self.list
-
-    # tree chopping pathing is not right because stops right before it
-    # how to for tree go to that and one additional   
+  
     def set_path(self):
         start = self.grid.node(int(self.agent.pos.x // TILE_SIZE), int(self.agent.pos.y // TILE_SIZE))
         min_len = sys.maxsize
@@ -127,24 +120,11 @@ class TreeBehavior(Behavior):
         self.agent.timers['tool use'].activate()
     
     def update(self):
-        # set direction agent should face at the end of its movement
-        if (self.agent.movement == Status.SUCCESS):
-            face_dir = (pygame.math.Vector2((self.agent.pos.x + 0.5)  * TILE_SIZE, (self.agent.pos.y + 0.5) * TILE_SIZE) 
-                                  - pygame.math.Vector2(self.selected_tree.pos[0], self.selected_tree.pos[1])).normalize()
-            if face_dir.y > 0:
-                self.agent.status = 'down'
-            elif face_dir.y < 0:
-                self.agent.status = 'up' 
-            if face_dir.x > 0 and abs(face_dir.x) > abs(face_dir.y):
-                self.agent.status = 'right'
-            elif face_dir.x < 0 and abs(face_dir.x) > abs(face_dir.y):
-                self.agent.status = 'left' 
-
         if (self.selected_tree is None or (type(self.selected_tree) is Tree and self.selected_tree.alive)):
-            super().update() # WHY DO IT BE MOVING
-            # why is it still moving?
+            super().update()
         if (self.selected_tree is not None and not self.selected_tree.alive):
             self.status = Status.SUCCESS
+            super().update()
 
 class IdleBehavior(Behavior):
     def __init__(self, agent, grid, reset_pos):     

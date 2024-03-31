@@ -37,7 +37,7 @@ class Agent(Entity):
         self.tree_behavior = TreeBehavior(agent = self, 
                                           trees = self.tree_sprites, 
                                           grid = self.grid, 
-                                          weight = 0)
+                                          weight = 1)
         self.idle_behavior = IdleBehavior(agent = self, 
                                           grid = self.grid, 
                                           reset_pos = self.RESET_POS)
@@ -93,9 +93,13 @@ class Agent(Entity):
         path,_ = self.finder.find_path(start, end, self.grid)
         self.grid.cleanup()
 
+        # for tree pathing?
         if (self.target_object):
             path.append(self.target_object)
-        # for tree: make sure is facing right direction at the end of the path and can hit the tree
+        if (start == self.target_object):
+            self.movement = Status.SUCCESS
+            return
+        
         if (path):
             path.pop(0)
             if (path):
@@ -130,15 +134,16 @@ class Agent(Entity):
         if (self.curr_behavior.status != Status.RUNNING):
             # select a new behavior
             self.target_status = None
+            self.target_object = None
             self.target= None
-            self.curr_behavior.status = Status.NOT_RUNNING
-
+            
+            self.curr_behavior.reset()
             self.select_behavior()
+
             self.movement = Status.NOT_RUNNING
             self.curr_behavior.status = Status.RUNNING
         else:
             self.curr_behavior.update()
-        # print(self.target)
         if (self.movement is not Status.SUCCESS and self.target):
             self.move(dt)
         self.animate(dt)
