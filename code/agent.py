@@ -20,6 +20,7 @@ class Agent(Entity):
         self.RESET_POS = pygame.math.Vector2(pos[0], pos[1])
         self.movement = Status.NOT_RUNNING
         self.target = None
+        self.target_object = None
 
         # pathfinding debugging values
         self.screen = screen
@@ -36,12 +37,13 @@ class Agent(Entity):
         self.tree_behavior = TreeBehavior(agent = self, 
                                           trees = self.tree_sprites, 
                                           grid = self.grid, 
-                                          weight = 1)
+                                          weight = 0)
         self.idle_behavior = IdleBehavior(agent = self, 
                                           grid = self.grid, 
                                           reset_pos = self.RESET_POS)
 
-        # should test action first i think
+        self.behaviors = [self.idle_behavior, self.water_behavior, self.tree_behavior]
+
         self.curr_behavior =  self.idle_behavior
         # user manual toggle behavior 
         # decision making algorithm (currently - rules, loosely; ultility based on how much work needs to be done & how importnat it is)
@@ -49,9 +51,6 @@ class Agent(Entity):
     def select_behavior(self):
         weight_water = self.water_behavior.weight * len(self.water_behavior.get_tiles())
         weight_trees = self.tree_behavior.weight * len(self.tree_behavior.get_tiles())
-
-        # print(len(self.water_behavior.get_tiles()))
-        # print(len(self.tree_behavior.get_tiles()))
 
         if (weight_water >= weight_trees):
             self.curr_behavior = self.water_behavior
@@ -87,17 +86,21 @@ class Agent(Entity):
         else:
             return False
 
+    # todo: find tune pathing
     def move(self, dt):        
         start = self.grid.node(int(self.pos.x // TILE_SIZE), int(self.pos.y // TILE_SIZE))
         end = self.grid.node(int(self.target.x), int(self.target.y)) 
         path,_ = self.finder.find_path(start, end, self.grid)
         self.grid.cleanup()
+
+        if (self.target_object):
+            path.append(self.target_object)
+        # path.append(end)
         # print(path)
         # for tree: make sure is facing right direction at the end of the path and can hit the tree
         if (path):
             path.pop(0)
             # print(self.check_target_intersect((end.x, end.y)))
-            # if(path and not self.check_target_intersect((end.x, end.y))):
             # print(len(path), self.pos)
             if (path):
                 self.direction = (pygame.math.Vector2((path[0].x + 0.5)  * TILE_SIZE, (path[0].y + 0.5) * TILE_SIZE) 
@@ -128,17 +131,20 @@ class Agent(Entity):
         self.get_target_pos()
         
         # check if the behavior has finished running (either success or failure)    
-        if (self.curr_behavior.status == Status.RUNNING):
-            self.curr_behavior.update()
-        else:
+        if (self.curr_behavior.status != Status.RUNNING):
             # select a new behavior
+            self.target_status = None
+            self.target= None
             self.curr_behavior.status = Status.NOT_RUNNING
+
             self.select_behavior()
+            self.movement = Status.NOT_RUNNING
             self.curr_behavior.status = Status.RUNNING
+        else:
+            self.curr_behavior.update()
         # print(self.target)
         if (self.movement is not Status.SUCCESS and self.target):
             self.move(dt)
-        # print(self.movement)
         self.animate(dt)
     
     def reset(self):

@@ -22,6 +22,7 @@ class Behavior():
         min_len = sys.maxsize
         nearest_coor = None
 
+        # print(self.list)
         for coor in self.list:      
             end = self.grid.node(int(coor.x), int(coor.y))         
             path = self.finder.find_path(start, end, self.grid)
@@ -37,6 +38,7 @@ class Behavior():
 
     def update(self):
         if (self.list):
+            
             # a - isn't always in the hit box (this is movement debugging, it picks the right one, though
             # ^ this is "how do i get it to point in the direction of the tile"
             # ARGHHHHH LOGIC!!!! MATH!! COMPLICATED MATHS AND LOGIC!!!
@@ -48,7 +50,7 @@ class Behavior():
                 elif (self.agent.movement == Status.FAILURE):
                     self.agent.movement = Status.NOT_RUNNING
                     self.status = Status.FAILURE
-                if (self.status == Status.RUNNING): 
+                if (self.status == Status.RUNNING and self.agent.movement == Status.NOT_RUNNING): 
                     if (not self.agent.timers['tool use'].active):
                         self.action() 
                     else: 
@@ -71,12 +73,8 @@ class WaterBehavior(Behavior):
             for index_col, cell in enumerate(row):
                 if 'X' in cell and not 'W' in cell:
                     self.list.append(pygame.math.Vector2(index_col, index_row))
+        # print(self.list)
         return self.list
-
-    def set_path(self):
-        _ = self.get_tiles
-        super().set_path()
-        # pass it the list of unwatered soil tiles you get from the current soil layer.
 
     def action(self):
         # set the agent's selected tool to watering can and use it
@@ -84,6 +82,9 @@ class WaterBehavior(Behavior):
         self.agent.selected_tool = self.agent.tools[self.agent.tool_index]
         self.agent.timers['tool use'].activate()
 
+    # def update(self):
+    #     self.list = self.get_tiles()
+    #     super().update()
 class TreeBehavior(Behavior):
     def __init__(self, agent, trees, grid, weight):
         self.trees = trees
@@ -119,6 +120,7 @@ class TreeBehavior(Behavior):
                     if (path and len(path) < min_len):
                         nearest_coor = end 
                         self.selected_tree = tree
+                        self.agent.target_object = self.grid.node(int(tree.pos[0] // TILE_SIZE), int(tree.pos[1] // TILE_SIZE))
         self.agent.target = nearest_coor  
        
     def action(self):
