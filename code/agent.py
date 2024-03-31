@@ -98,6 +98,7 @@ class Agent(Entity):
             path.pop(0)
             # print(self.check_target_intersect((end.x, end.y)))
             # if(path and not self.check_target_intersect((end.x, end.y))):
+            # print(len(path), self.pos)
             if (path):
                 self.direction = (pygame.math.Vector2((path[0].x + 0.5)  * TILE_SIZE, (path[0].y + 0.5) * TILE_SIZE) 
                                   - pygame.math.Vector2(self.pos.x, self.pos.y)).normalize()
@@ -126,8 +127,6 @@ class Agent(Entity):
         self.update_timers()
         self.get_target_pos()
         
-        # point in direction of target before doing the action
-
         # check if the behavior has finished running (either success or failure)    
         if (self.curr_behavior.status == Status.RUNNING):
             self.curr_behavior.update()
@@ -139,7 +138,7 @@ class Agent(Entity):
         # print(self.target)
         if (self.movement is not Status.SUCCESS and self.target):
             self.move(dt)
-
+        # print(self.movement)
         self.animate(dt)
     
     def reset(self):

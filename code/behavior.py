@@ -96,7 +96,9 @@ class TreeBehavior(Behavior):
             if tree.alive:
                 self.list.append(tree)
         return self.list
-        
+
+    # tree chopping pathing is not right because stops right before it
+    # how to for tree go to that and one additional   
     def set_path(self):
         start = self.grid.node(int(self.agent.pos.x // TILE_SIZE), int(self.agent.pos.y // TILE_SIZE))
         min_len = sys.maxsize
@@ -105,9 +107,11 @@ class TreeBehavior(Behavior):
         for tree in self.list:
             if (type(tree) is Tree and tree.alive):
                 coor = pygame.math.Vector2(tree.pos[0] // TILE_SIZE, tree.pos[1] // TILE_SIZE)
-                # if (tree.x, tree.y) in TREE_POS:
-                #     coor = TREE_POS.get((tree.x, tree.y))
-                    
+                # if (tree.pos[0], tree.pos[1]) in TREE_POS:
+                #     coor = TREE_POS.get((tree.pos[0], tree[1]))
+                # else:
+                #   continue
+                
                 for dir in DIRECTIONS:   
                     end = self.grid.node(int(coor.x)  + dir.value[0], int(coor.y) + dir.value[1]) 
                     path,_ = self.finder.find_path(start, end, self.grid)
@@ -127,7 +131,7 @@ class TreeBehavior(Behavior):
         # set direction agent should face at the end of its movement
         if (self.agent.movement == Status.SUCCESS):
             face_dir = (pygame.math.Vector2((self.agent.pos.x + 0.5)  * TILE_SIZE, (self.agent.pos.y + 0.5) * TILE_SIZE) 
-                                  - pygame.math.Vector2(self.selected_tree.x, self.selected_tree.y)).normalize()
+                                  - pygame.math.Vector2(self.selected_tree.pos[0], self.selected_tree.pos[1])).normalize()
             if face_dir.y > 0:
                 self.agent.status = 'down'
             elif face_dir.y < 0:
@@ -140,7 +144,7 @@ class TreeBehavior(Behavior):
         if (self.selected_tree is None or (type(self.selected_tree) is Tree and self.selected_tree.alive)):
             super().update() # WHY DO IT BE MOVING
             # why is it still moving?
-        if (not self.selected_tree.alive):
+        if (self.selected_tree is not None and not self.selected_tree.alive):
             self.status = Status.SUCCESS
 
 class IdleBehavior(Behavior):

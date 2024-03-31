@@ -209,6 +209,9 @@ class Level:
 		self.matrix = [[1 for col in range(h_tiles)] for row in range(v_tiles)]
 		for x, y, _ in load_pygame('../data/map.tmx').get_layer_by_name('Collision').tiles():
 			self.matrix[y][x] = 0
+		for x, y, _ in load_pygame('../data/map.tmx').get_layer_by_name('Fence').tiles():
+			self.matrix[y][x] = 0
+
 		# house edge cases
 		for i in range(21, 27):
 			self.matrix[i][19] = 0
@@ -225,8 +228,8 @@ class Level:
 		self.grid = Grid(range(h_tiles), range(v_tiles), self.matrix)
 		
 		# drawing test functions
-		# self.draw_grid(h_tiles, v_tiles)	
-		# self.draw_grid_lines(h_tiles, v_tiles)	
+		self.draw_grid(h_tiles, v_tiles)	
+		self.draw_grid_lines(h_tiles, v_tiles)	
 
 	def draw_grid_lines(self, h_tiles, v_tiles):
 		for col in range(h_tiles):
