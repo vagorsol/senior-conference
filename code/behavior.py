@@ -94,14 +94,14 @@ class TreeBehavior(Behavior):
         start = self.grid.node(int(self.agent.pos.x // TILE_SIZE), int(self.agent.pos.y // TILE_SIZE))
         min_len = sys.maxsize
         nearest_coor = None
-
         for tree in self.list:
             if (type(tree) is Tree and tree.alive):
-                coor = pygame.math.Vector2(tree.pos[0] // TILE_SIZE, tree.pos[1] // TILE_SIZE)
-                # if (tree.pos[0], tree.pos[1]) in TREE_POS:
-                #     coor = TREE_POS.get((tree.pos[0], tree[1]))
-                # else:
-                #   continue
+                key = (tree.pos[0] // TILE_SIZE, tree.pos[1] // TILE_SIZE)
+                if key in TREE_POS:
+                    val = TREE_POS.get(key)
+                    coor = pygame.math.Vector2(val[0], val[1])
+                else:
+                  continue
                 
                 for dir in DIRECTIONS:   
                     end = self.grid.node(int(coor.x)  + dir.value[0], int(coor.y) + dir.value[1]) 
@@ -109,8 +109,8 @@ class TreeBehavior(Behavior):
                     self.grid.cleanup()
                     if (path and len(path) < min_len):
                         nearest_coor = end 
-                        self.selected_tree = tree
-                        self.agent.target_object = self.grid.node(int(tree.pos[0] // TILE_SIZE), int(tree.pos[1] // TILE_SIZE))
+                        self.selected_tree = tree # set target to actually the key value
+                        self.agent.target_object = self.grid.node(val[0], val[1])
         self.agent.target = nearest_coor  
        
     def action(self):
@@ -118,6 +118,7 @@ class TreeBehavior(Behavior):
         self.agent.tool_index = 1
         self.agent.selected_tool = self.agent.tools[self.agent.tool_index]
         self.agent.timers['tool use'].activate()
+        # TODO: fix  game lagging when agent uses its tools
     
     def update(self):
         if (self.selected_tree is None or (type(self.selected_tree) is Tree and self.selected_tree.alive)):

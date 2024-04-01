@@ -33,11 +33,11 @@ class Agent(Entity):
         self.water_behavior = WaterBehavior(agent = self, 
                                             soil_tiles = self.soil_layer, 
                                             grid = self.grid, 
-                                            weight = 2)
+                                            weight = 5)
         self.tree_behavior = TreeBehavior(agent = self, 
                                           trees = self.tree_sprites, 
                                           grid = self.grid, 
-                                          weight = 1)
+                                          weight = 0.5)
         self.idle_behavior = IdleBehavior(agent = self, 
                                           grid = self.grid, 
                                           reset_pos = self.RESET_POS)
@@ -72,20 +72,6 @@ class Agent(Entity):
             point_rect.x = x
             point_rect.y = y
             Generic((x, y), point_surf, self.all_sprites)   
-    
-    def check_target_intersect(self, target):
-        ceil_pos = (math.ceil(self.pos.x / TILE_SIZE),
-                    math.ceil(self.pos.y / TILE_SIZE))
-        floor_pos = (int(self.pos.x // TILE_SIZE), int(self.pos.y // TILE_SIZE))
-    
-        if(ceil_pos == target 
-           or floor_pos == target 
-           or (ceil_pos[0], floor_pos[1]) == target 
-           or (floor_pos[0], ceil_pos[1]) == target
-        ):
-            return True
-        else:
-            return False
 
     def move(self, dt):        
         start = self.grid.node(int(self.pos.x // TILE_SIZE), int(self.pos.y // TILE_SIZE))
@@ -93,7 +79,6 @@ class Agent(Entity):
         path,_ = self.finder.find_path(start, end, self.grid)
         self.grid.cleanup()
 
-        # for tree pathing?
         if (self.target_object):
             path.append(self.target_object)
         if (start == self.target_object):
