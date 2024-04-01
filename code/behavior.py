@@ -6,7 +6,7 @@ from pathfinding.core.grid import Grid
 from pathfinding.finder.a_star import AStarFinder
 from pathfinding.core.diagonal_movement import DiagonalMovement 
 
-DIRECTIONS = [Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST]
+DIRECTIONS = [Direction.NORTH.value, Direction.SOUTH.value, Direction.EAST.value, Direction.WEST.value]
 
 class Behavior():
     def __init__(self, agent, grid, weight):
@@ -15,7 +15,7 @@ class Behavior():
         self.grid = grid
         self.weight = weight
         self.finder = AStarFinder(diagonal_movement = DiagonalMovement.never)
-        self.status = Status.NOT_RUNNING # setting status as not running by default
+        self.status = Status.NOT_RUNNING.value # setting status as not running by default
 
     def set_path(self):
         start = self.grid.node(int(self.agent.pos.x // TILE_SIZE), int(self.agent.pos.y // TILE_SIZE))
@@ -37,26 +37,26 @@ class Behavior():
 
     def update(self):
         if (self.list):
-            if (self.agent.movement == Status.NOT_RUNNING):
+            if (self.agent.movement == Status.NOT_RUNNING.value):
                 self.set_path()
             else:
-                if (self.agent.movement == Status.SUCCESS):
-                    self.agent.movement = Status.NOT_RUNNING
-                elif (self.agent.movement == Status.FAILURE):
-                    self.agent.movement = Status.NOT_RUNNING
-                    self.status = Status.FAILURE
-                if (self.status == Status.RUNNING and self.agent.movement == Status.NOT_RUNNING): 
+                if (self.agent.movement == Status.SUCCESS.value):
+                    self.agent.movement = Status.NOT_RUNNING.value
+                elif (self.agent.movement == Status.FAILURE.value):
+                    self.agent.movement = Status.NOT_RUNNING.value
+                    self.status = Status.FAILURE.value
+                if (self.status == Status.RUNNING.value and self.agent.movement == Status.NOT_RUNNING.value): 
                     if (not self.agent.timers['tool use'].active):
                         self.action() 
                     else: 
-                        self.status = Status.SUCCESS
+                        self.status = Status.SUCCESS.value
         else:
-            self.status = Status.FAILURE
-            self.agent.movement = Status.NOT_RUNNING
+            self.status = Status.FAILURE.value
+            self.agent.movement = Status.NOT_RUNNING.value
     
     def reset(self):
         self.list = []
-        self.status = Status.NOT_RUNNING
+        self.status = Status.NOT_RUNNING.value
         
 class WaterBehavior(Behavior):
     def __init__(self, agent, soil_tiles, grid, weight):
@@ -104,7 +104,7 @@ class TreeBehavior(Behavior):
                   continue
                 
                 for dir in DIRECTIONS:   
-                    end = self.grid.node(int(coor.x)  + dir.value[0], int(coor.y) + dir.value[1]) 
+                    end = self.grid.node(int(coor.x)  + dir[0], int(coor.y) + dir[1]) 
                     path,_ = self.finder.find_path(start, end, self.grid)
                     self.grid.cleanup()
                     if (path and len(path) < min_len):
@@ -124,7 +124,7 @@ class TreeBehavior(Behavior):
         if (self.selected_tree is None or (type(self.selected_tree) is Tree and self.selected_tree.alive)):
             super().update()
         if (self.selected_tree is not None and not self.selected_tree.alive):
-            self.status = Status.SUCCESS
+            self.status = Status.SUCCESS.value
             super().update()
 
 class IdleBehavior(Behavior):

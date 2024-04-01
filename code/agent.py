@@ -10,7 +10,7 @@ from pathfinding.finder.a_star import AStarFinder
 from pathfinding.core.diagonal_movement import DiagonalMovement
 
 class Agent(Entity):
-    def __init__(self, pos, player, group, collision_sprites, tree_sprites, interaction, soil_layer, grid, screen, all_sprites):
+    def __init__(self, pos, player, group, collision_sprites, tree_sprites, interaction, soil_layer, grid, screen, all_sprites, agent_mode):
         super().__init__(pos, group, collision_sprites, tree_sprites, interaction, soil_layer, "agent")
         
         self.player = player
@@ -18,14 +18,16 @@ class Agent(Entity):
         self.grid = grid
         self.finder = AStarFinder(diagonal_movement = DiagonalMovement.never) 
         self.RESET_POS = pygame.math.Vector2(pos[0], pos[1])
-        self.movement = Status.NOT_RUNNING
+        self.movement = Status.NOT_RUNNING.value
         self.target = None
         self.target_object = None
+        self.mode = agent_mode
+        self.curr_behavior_index = 0
 
         # pathfinding debugging values
         self.screen = screen
         self.all_sprites = all_sprites
-
+        
         # set up the behavior tree
         self.setup()
 
@@ -45,20 +47,30 @@ class Agent(Entity):
         self.behaviors = [self.idle_behavior, self.water_behavior, self.tree_behavior]
 
         self.curr_behavior =  self.idle_behavior
-        # user manual toggle behavior - if [insert command args], else set to correspoinding key [1 to water, 2 to tree]
-        # double check with aline if it's water one tile or all
-        # decision making algorithm (currently - rules, loosely; ultility based on how much work needs to be done & how importnat it is)
+        
+    def input(self):
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_1]:
+            self.curr_behavior_index = 1
+        if keys[pygame.K_2]:
+            self.curr_behavior_index = 2
 
     def select_behavior(self):
-        weight_water = self.water_behavior.weight * len(self.water_behavior.get_tiles())
-        weight_trees = self.tree_behavior.weight * len(self.tree_behavior.get_tiles())
+        if (self.mode == Mode.UTILITY.value):
+            weight_water = self.water_behavior.weight * len(self.water_behavior.get_tiles())
+            weight_trees = self.tree_behavior.weight * len(self.tree_behavior.get_tiles())
 
-        if (weight_water >= weight_trees):
-            self.curr_behavior = self.water_behavior
-        elif (weight_water < weight_trees):
-            self.curr_behavior = self.tree_behavior
-        elif (weight_water == 0 and weight_trees == 0):
-            self.curr_behavior = self.idle_behavior
+            if (weight_water >= weight_trees):
+                self.curr_behavior = self.water_behavior
+            elif (weight_water < weight_trees):
+                self.curr_behavior = self.tree_behavior
+            elif (weight_water == 0 and weight_trees == 0):
+                self.curr_behavior = self.idle_behavior
+        elif (self.mode == Mode.KEY.value):
+            self.curr_behavior = self.behaviors[self.curr_behavior_index]
+            # self.curr_behavior.
+        else:
+           self.curr_behavior = self.idle_behavior 
 
     # pathing debugging function
     def draw_path(self, path):
@@ -82,7 +94,7 @@ class Agent(Entity):
         if (self.target_object):
             path.append(self.target_object)
         if (start == self.target_object):
-            self.movement = Status.SUCCESS
+            self.movement = Status.SUCCESS.value
             return
         
         if (path):
@@ -90,13 +102,13 @@ class Agent(Entity):
             if (path):
                 self.direction = (pygame.math.Vector2((path[0].x + 0.5)  * TILE_SIZE, (path[0].y + 0.25) * TILE_SIZE) 
                                   - pygame.math.Vector2(self.pos.x, self.pos.y)).normalize()
-                self.movement = Status.RUNNING # flag for "currently moving"
+                self.movement = Status.RUNNING.value # flag for "currently moving"
             else:
                 self.direction = pygame.math.Vector2(0, 0)
-                self.movement = Status.SUCCESS # flag for arrival
+                self.movement = Status.SUCCESS.value # flag for arrival
         else: 
             self.direction = pygame.math.Vector2(0, 0)
-            self.movement = Status.FAILURE # flag for failure
+            self.movement = Status.FAILURE.value # flag for failure
         
         # setting the walking animation
         if self.direction.y > 0:
@@ -111,12 +123,13 @@ class Agent(Entity):
         super().move(dt) 
 
     def update(self, dt):
+        self.input()
         self.get_status()
         self.update_timers()
         self.get_target_pos()
         
         # check if the behavior has finished running (either success or failure)    
-        if (self.curr_behavior.status != Status.RUNNING):
+        if (self.curr_behavior.status != Status.RUNNING.value):
             # select a new behavior
             self.target_status = None
             self.target_object = None
@@ -125,17 +138,18 @@ class Agent(Entity):
             self.curr_behavior.reset()
             self.select_behavior()
 
-            self.movement = Status.NOT_RUNNING
-            self.curr_behavior.status = Status.RUNNING
-        else:
+            self.movement = Status.NOT_RUNNING.value
+            self.curr_behavior.status = Status.RUNNING.value
+        if(not self.curr_behavior.status != Status.RUNNING.value):
             self.curr_behavior.update()
-        if (self.movement is not Status.SUCCESS and self.target):
+        if (self.movement is not Status.SUCCESS.value and self.target):
             self.move(dt)
+        print(Status(self.curr_behavior.status)) # why is key press not working?
         self.animate(dt)
     
     def reset(self):
         self.pos = pygame.math.Vector2(self.RESET_POS.x, self.RESET_POS.y)
-        self.movement = Status.NOT_RUNNING
+        self.movement = Status.NOT_RUNNING.value
         self.curr_behavior = self.behaviors[0]
 
         for behavior in self.behaviors:

@@ -35,3 +35,8 @@ class Direction(Enum):
 	SOUTH = (0, 1)
 	EAST = (1, 0)
 	WEST = (-1, 0)
+
+class Mode(Enum):
+	NONE = 0
+	KEY = 1
+	UTILITY = 2

@@ -14,7 +14,7 @@ from menu import Menu
 from agent import Agent
 
 class Level:
-	def __init__(self, screen):
+	def __init__(self, screen, agent_mode):
 
 		self.screen = screen
 		# get the display surface
@@ -28,6 +28,8 @@ class Level:
 		self.interaction_sprites = pygame.sprite.Group()
 
 		self.soil_layer = SoilLayer(self.all_sprites, self.collision_sprites)
+		self.agent_mode = agent_mode
+
 		self.setup()
 		self.overlay = Overlay(self.player)
 		self.transition = Transition(self.reset, self.player)
@@ -43,10 +45,11 @@ class Level:
 		self.shop_active = False
 		
 		# music
-		# self.success = pygame.mixer.Sound('../audio/success.wav')
-		# self.success.set_volume(0.3)
-		# self.music = pygame.mixer.Sound('../audio/music.mp3')
-		# self.music.play(loops = -1)
+		self.success = pygame.mixer.Sound('../audio/success.wav')
+		self.success.set_volume(0.3)
+		self.music = pygame.mixer.Sound('../audio/music.mp3')
+		self.music.set_volume(0.1)
+		self.music.play(loops = -1)
 
 	def setup(self):
 		tmx_data = load_pygame('../data/map.tmx')
@@ -117,7 +120,8 @@ class Level:
 					soil_layer = self.soil_layer,
 					grid = self.grid,
 					screen = self.screen,
-					all_sprites = self.all_sprites
+					all_sprites = self.all_sprites,
+					agent_mode = self.agent_mode 
 				)
 
 		Generic(

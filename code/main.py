@@ -4,11 +4,16 @@ from level import Level
 
 class Game:
 	def __init__(self):
+		# set which agent mode (none, key press, or utility based)
+		mode = 0
+		if (len(sys.argv) > 1):
+			mode = int(sys.argv[1])
+
 		pygame.init()
 		self.screen = pygame.display.set_mode((SCREEN_WIDTH,SCREEN_HEIGHT))
 		pygame.display.set_caption('Sprout land')
 		self.clock = pygame.time.Clock()
-		self.level = Level(self.screen)
+		self.level = Level(self.screen, mode)
 
 	def run(self):
 		while True:
