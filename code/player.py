@@ -7,20 +7,6 @@ from timer import Timer
 class Player(Entity):
 	def __init__(self, pos, group, collision_sprites, tree_sprites, interaction, soil_layer, toggle_shop):
 		super().__init__(pos, group, collision_sprites, tree_sprites, interaction, soil_layer, 'character')
-		
-		# inventory
-		# self.item_inventory = {
-		# 	'wood':   20,
-		# 	'apple':  20,
-		# 	'corn':   20,
-		# 	'tomato': 20
-		# }
-		# self.seed_inventory = {
-		# 'corn': 5,
-		# 'tomato': 5
-		# }
-		# self.money = 200
-
 		# interaction
 		self.sleep = False
 		self.toggle_shop = toggle_shop
