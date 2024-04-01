@@ -32,10 +32,15 @@ class Behavior():
                 nearest_coor = end 
         self.agent.target = nearest_coor 
 
+    def get_tiles(self):
+        pass
+
     def action(self):
         pass
 
     def update(self):
+        _ = self.get_tiles()
+
         if (self.list):
             if (self.agent.movement == Status.NOT_RUNNING.value):
                 self.set_path()

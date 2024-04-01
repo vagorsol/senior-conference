@@ -140,11 +140,13 @@ class Agent(Entity):
 
             self.movement = Status.NOT_RUNNING.value
             self.curr_behavior.status = Status.RUNNING.value
-        if(not self.curr_behavior.status != Status.RUNNING.value):
+        # key press where it can switch behavior mid-action (in theory)
+        elif(self.mode == Mode.KEY.value):
+            self.select_behavior()
             self.curr_behavior.update()
         if (self.movement is not Status.SUCCESS.value and self.target):
             self.move(dt)
-        print(Status(self.curr_behavior.status)) # why is key press not working?
+        
         self.animate(dt)
     
     def reset(self):
